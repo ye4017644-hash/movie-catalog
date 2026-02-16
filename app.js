@@ -1,205 +1,185 @@
-// قاعدة بيانات الأفلام المبدئية
-const initialMovies = [
-    {
-        title: "Брат",
-        genre: "Драма",
-        year: 1997,
-        rating: 8.1,
-        director: "Алексей Балабанов",
-        country: "Россия",
-        actors: "Сергей Бодров мл., Виктор Сухоруков",
-        poster: "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=500&h=750&fit=crop",
-        description: "Демобилизовавшийся солдат приезжает в Петербург к старшему брату и оказывается втянутым в криминальный мир 90-х."
-    },
-    {
-        title: "Движение вверх",
-        genre: "Драма",
-        year: 2017,
-        rating: 7.6,
-        director: "Антон Мегердичев",
-        country: "Россия",
-        actors: "Владимир Машков, Андрей Смоляков",
-        poster: "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=500&h=750&fit=crop",
-        description: "История легендарной победы советской сборной по баскетболу на Олимпийских играх 1972 года."
-    },
-    {
-        title: "Зеленая книга",
-        genre: "Драма",
-        year: 2018,
-        rating: 8.2,
-        director: "Питер Фаррелли",
-        country: "США",
-        actors: "Вигго Мортенсен, Махершала Али",
-        poster: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=500&h=750&fit=crop",
-        description: "История дружбы между афроамериканским пианистом и его водителем итальянского происхождения во время турне по американскому Югу в 1960-х."
-    }
-];
+// OMDb API Configuration
+const API_KEY = '7fa8063c'; // مفتاحك السحري
+const API_URL = 'https://www.omdbapi.com/';
 
-let moviesDatabase = [];
-let currentMovies = [];
+// المتغيرات العامة
+let db = null;
 
-// تحميل الأفلام من Firebase
-async function loadMoviesFromFirebase() {
-    try {
-        console.log('🔄 Загрузка из Firebase...');
-
-        const snapshot = await db.collection('movies').orderBy('timestamp', 'desc').get();
-
-        moviesDatabase = [];
-        snapshot.forEach(doc => {
-            moviesDatabase.push({
-                id: doc.id,
-                ...doc.data()
-            });
-        });
-
-        console.log('✅ Загружено фильмов:', moviesDatabase.length);
-
-        // إذا قاعدة البيانات فارغة، أضف الأفلام المبدئية
-        if (moviesDatabase.length === 0) {
-            console.log('📦 Добавление начальных фильмов...');
-            await addInitialMovies();
+// عند تحميل الصفحة
+window.addEventListener('DOMContentLoaded', async () => {
+    console.log('%c🎬 Movie App Started!', 'color: #ffd700; font-size: 16px; font-weight: bold;');
+    
+    // محاولة الاتصال بـ Firebase (اختياري، لن يؤثر على الـ API)
+    if (typeof firebase !== 'undefined') {
+        try {
+            db = firebase.firestore();
+            console.log('✅ Firebase Connected');
+            showNotification('✅ Подключено к Firebase!', 'success');
+        } catch (e) {
+            console.warn('⚠️ Firebase not connected (Local Mode)');
         }
+    }
 
-        return moviesDatabase;
+    // تعديل واجهة المستخدم لتناسب البحث
+    setupSearchUI();
+
+    // عرض أفلام مقترحة فورًا
+    loadFeaturedMovies();
+});
+
+// تحميل أفلام مقترحة عند الفتح
+async function loadFeaturedMovies() {
+    // قائمة أفلام مشهورة تظهر في البداية
+    const featuredTitles = ["Inception", "Interstellar", "The Dark Knight", "Avengers", "Joker", "Titanic", "Avatar", "Matrix"];
+    const moviesGrid = document.getElementById('moviesGrid');
+    
+    if(moviesGrid) {
+        moviesGrid.innerHTML = '<div class="loading" style="grid-column: 1/-1; text-align: center; font-size: 1.2rem; padding: 20px;">⏳ Загрузка популярных фильмов...</div>';
+    }
+
+    let movies = [];
+    for (const title of featuredTitles) {
+        const movie = await fetchMovieFromAPI(title);
+        if (movie) movies.push(movie);
+    }
+    
+    displayMovies(movies);
+}
+
+// البحث في API
+async function searchMovies(query) {
+    if (!query) return;
+    
+    showLoader();
+    try {
+        // البحث عن قائمة أفلام
+        const response = await fetch(`${API_URL}?apikey=${API_KEY}&s=${query}`);
+        const data = await response.json();
+
+        if (data.Response === "True") {
+            // جلب تفاصيل أول 8 أفلام (عشان التقييم والقصة تكون دقيقة)
+            const detailedMovies = await Promise.all(
+                data.Search.slice(0, 8).map(m => fetchMovieFromAPI(m.Title))
+            );
+            // فلترة النتائج اللي ملهاش بوستر
+            const validMovies = detailedMovies.filter(m => m && m.Poster !== 'N/A');
+            displayMovies(validMovies.length > 0 ? validMovies : detailedMovies);
+        } else {
+            showError('Фильмы не найдены (Movies not found)');
+        }
     } catch (error) {
-        console.error('❌ Ошибка Firebase:', error);
-        showNotification('⚠️ Работа в локальном режиме', 'warning');
-        moviesDatabase = [...initialMovies];
-        return moviesDatabase;
+        console.error('Error:', error);
+        showError('Ошибка сети (Network Error)');
     }
 }
 
-// إضافة الأفلام المبدئية
-async function addInitialMovies() {
-    for (const movie of initialMovies) {
-        try {
-            await db.collection('movies').add({
-                ...movie,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        } catch (error) {
-            console.error('Ошибка:', error);
-        }
+// جلب تفاصيل فيلم واحد
+async function fetchMovieFromAPI(title) {
+    try {
+        const response = await fetch(`${API_URL}?apikey=${API_KEY}&t=${title}`);
+        const data = await response.json();
+        return data.Response === "True" ? data : null;
+    } catch (error) {
+        return null;
     }
-    await loadMoviesFromFirebase();
 }
 
 // عرض الأفلام
 function displayMovies(movies) {
     const moviesGrid = document.getElementById('moviesGrid');
-    const noResults = document.getElementById('noResults');
-
+    const movieCount = document.getElementById('movieCount');
+    
     if (!moviesGrid) return;
+    
+    moviesGrid.innerHTML = '';
+    if(movieCount) movieCount.textContent = `(${movies.length})`;
 
     if (movies.length === 0) {
-        moviesGrid.innerHTML = '';
-        noResults.style.display = 'block';
-        updateMovieCount(0);
+        showError('Нет результатов');
         return;
     }
 
-    noResults.style.display = 'none';
+    movies.forEach(movie => {
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        // تحسين مظهر الكارت
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+        card.style.height = '100%';
 
-    moviesGrid.innerHTML = movies.map(movie => `
-        <div class="movie-card">
-            <img src="${movie.poster}" alt="${movie.title}" class="movie-poster" loading="lazy">
-            <div class="movie-card-content">
-                <div class="movie-title">${movie.title}</div>
-                <div class="movie-info">📅 <strong>Год:</strong> ${movie.year}</div>
-                <div class="movie-info">🎬 <strong>Режиссёр:</strong> ${movie.director}</div>
-                <div class="movie-info">🌍 <strong>Страна:</strong> ${movie.country}</div>
-                <div class="movie-info">🎭 <strong>Актёры:</strong> ${movie.actors}</div>
-                <div class="movie-badges">
-                    <span class="movie-genre">${movie.genre}</span>
-                    <span class="movie-rating">⭐ ${movie.rating}</span>
-                </div>
-                <div class="movie-description">${movie.description}</div>
+        const posterUrl = movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/300x450?text=No+Poster';
+        
+        card.innerHTML = `
+            <div class="poster-container" style="position: relative; overflow: hidden; border-radius: 12px 12px 0 0;">
+                <img src="${posterUrl}" 
+                     alt="${movie.Title}" class="movie-poster" style="width: 100%; height: 400px; object-fit: cover;">
+                <span class="rating-badge" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #ffd700; padding: 5px 10px; border-radius: 20px; font-weight: bold;">
+                    ⭐ ${movie.imdbRating || 'N/A'}
+                </span>
             </div>
-        </div>
-    `).join('');
-
-    updateMovieCount(movies.length);
-}
-
-function updateMovieCount(count) {
-    const movieCount = document.getElementById('movieCount');
-    if (movieCount) movieCount.textContent = `(${count})`;
-}
-
-function setupEventListeners() {
-    document.getElementById('applyFilters')?.addEventListener('click', applyFilters);
-    document.getElementById('resetFilters')?.addEventListener('click', resetFilters);
-    document.getElementById('addMovieForm')?.addEventListener('submit', addMovie);
-}
-
-function applyFilters() {
-    const genre = document.getElementById('genreFilter').value;
-    const year = document.getElementById('yearFilter').value;
-    const rating = document.getElementById('ratingFilter').value;
-    const country = document.getElementById('countryFilter').value;
-
-    currentMovies = moviesDatabase.filter(movie => {
-        if (genre && movie.genre !== genre) return false;
-        if (year) {
-            const [min, max] = year.split('-').map(Number);
-            if (movie.year < min || movie.year > max) return false;
-        }
-        if (rating && movie.rating < parseFloat(rating)) return false;
-        if (country && !movie.country.includes(country)) return false;
-        return true;
+            <div class="movie-card-content" style="padding: 15px; flex-grow: 1; display: flex; flex-direction: column;">
+                <h3 class="movie-title" style="margin: 0 0 10px 0; font-size: 1.2rem;">${movie.Title}</h3>
+                <div class="movie-info">📅 <strong>Год:</strong> ${movie.Year}</div>
+                <div class="movie-info">🎬 <strong>Жанр:</strong> ${movie.Genre}</div>
+                <div class="movie-info">⏱️ <strong>Время:</strong> ${movie.Runtime}</div>
+                <p class="movie-description" style="font-size: 0.9rem; color: #666; margin-top: 10px; flex-grow: 1;">
+                    ${movie.Plot !== 'N/A' ? (movie.Plot.length > 100 ? movie.Plot.substring(0, 100) + '...' : movie.Plot) : 'Описание недоступно'}
+                </p>
+                <a href="https://www.youtube.com/results?search_query=${movie.Title}+trailer" target="_blank" class="watch-btn" 
+                   style="display: block; width: 100%; padding: 10px; margin-top: 15px; background: #ff0000; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; transition: 0.3s;">
+                    ▶ Смотреть трейлер
+                </a>
+            </div>
+        `;
+        moviesGrid.appendChild(card);
     });
-
-    displayMovies(currentMovies);
 }
 
-function resetFilters() {
-    document.getElementById('genreFilter').value = '';
-    document.getElementById('yearFilter').value = '';
-    document.getElementById('ratingFilter').value = '';
-    document.getElementById('countryFilter').value = '';
-    currentMovies = [...moviesDatabase];
-    displayMovies(currentMovies);
-}
+// تحويل واجهة "إضافة فيلم" لواجهة "بحث"
+function setupSearchUI() {
+    // نخفي قسم الفلترة القديم لأنه مش متوافق مع API البحث الحر
+    const filtersSection = document.querySelector('.filters-section');
+    if (filtersSection) filtersSection.style.display = 'none';
 
-async function addMovie(e) {
-    e.preventDefault();
+    // نغير عنوان وقسم الإضافة
+    const addSection = document.querySelector('.add-movie-section');
+    if (addSection) {
+        addSection.innerHTML = `
+            <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+                <h2 style="margin-bottom: 20px;">🔍 Поиск фильмов (Search Movies)</h2>
+                <div class="search-box" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <input type="text" id="searchInput" placeholder="Введите название (например: Harry Potter)..." 
+                           style="flex: 1; min-width: 250px; padding: 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                    <button id="searchBtn" class="btn-primary" style="padding: 15px 30px; font-size: 1rem; cursor: pointer;">Найти (Search)</button>
+                </div>
+                <p style="margin-top: 10px; color: #666;">Например: <em>Batman, Avengers, Spider-Man, Joker</em></p>
+            </div>
+        `;
 
-    const newMovie = {
-        title: document.getElementById('movieTitle').value.trim(),
-        genre: document.getElementById('movieGenre').value,
-        year: parseInt(document.getElementById('movieYear').value),
-        rating: parseFloat(document.getElementById('movieRating').value),
-        director: document.getElementById('movieDirector').value.trim(),
-        country: document.getElementById('movieCountry').value.trim(),
-        actors: document.getElementById('movieActors').value.trim(),
-        poster: document.getElementById('moviePoster').value.trim() || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&h=750&fit=crop',
-        description: document.getElementById('movieDescription').value.trim(),
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    };
+        const searchBtn = document.getElementById('searchBtn');
+        const searchInput = document.getElementById('searchInput');
 
-    if (!newMovie.title || !newMovie.genre) {
-        showNotification('⚠️ Заполните обязательные поля!', 'warning');
-        return;
-    }
-
-    try {
-        await db.collection('movies').add(newMovie);
-        await loadMoviesFromFirebase();
-        currentMovies = [...moviesDatabase];
-        displayMovies(currentMovies);
-        e.target.reset();
-        showNotification('✅ Фильм добавлен в Firebase!', 'success');
-
-        setTimeout(() => {
-            document.querySelector('.movies-section')?.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-    } catch (error) {
-        console.error('Ошибка:', error);
-        showNotification('❌ Ошибка добавления', 'error');
+        if (searchBtn && searchInput) {
+            searchBtn.addEventListener('click', () => searchMovies(searchInput.value));
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchMovies(searchInput.value);
+            });
+        }
     }
 }
 
+// أدوات مساعدة
+function showLoader() {
+    const grid = document.getElementById('moviesGrid');
+    if(grid) grid.innerHTML = '<div class="loading" style="grid-column: 1/-1; text-align:center; padding:40px;">⏳ Ищем фильмы...</div>';
+}
+
+function showError(msg) {
+    const grid = document.getElementById('moviesGrid');
+    if(grid) grid.innerHTML = `<div class="error" style="grid-column: 1/-1; text-align:center; color: #d32f2f; padding:20px; font-size: 1.2rem;">❌ ${msg}</div>`;
+}
+
+// نظام الإشعارات
 function showNotification(message, type = 'success') {
     const colors = { success: '#4CAF50', warning: '#ff9800', error: '#f44336' };
     const notification = document.createElement('div');
@@ -214,30 +194,17 @@ function showNotification(message, type = 'success') {
     setTimeout(() => notification.remove(), 3000);
 }
 
+// إضافة CSS للرسوم المتحركة
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {
         from { transform: translateX(400px); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
     }
+    .watch-btn:hover {
+        background: #cc0000 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
 `;
 document.head.appendChild(style);
-
-// التهيئة
-window.addEventListener('DOMContentLoaded', async function () {
-    console.log('%c🎬 Запуск приложения...', 'color: #667eea; font-size: 18px; font-weight: bold;');
-
-    try {
-        await loadMoviesFromFirebase();
-        currentMovies = [...moviesDatabase];
-        displayMovies(currentMovies);
-        setupEventListeners();
-        showNotification('✅ Подключено к Firebase!', 'success');
-    } catch (error) {
-        console.error('Ошибка:', error);
-        moviesDatabase = [...initialMovies];
-        currentMovies = [...moviesDatabase];
-        displayMovies(currentMovies);
-        setupEventListeners();
-    }
-});
