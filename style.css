@@ -844,5 +844,451 @@ button:hover {
 }
 
 /* ============================================
+   THEME VARIABLES
+   ============================================ */
+
+:root {
+    --primary-color: #e50914;
+    --bg-dark: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+    --bg-light: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+    --text-color: #ffffff;
+    --text-secondary: #999;
+    --card-bg: rgba(0, 0, 0, 0.7);
+    --card-gradient: rgba(0, 0, 0, 0.9);
+    --input-bg: rgba(0, 0, 0, 0.8);
+    --shadow-color: rgba(229, 9, 20, 0.4);
+    --shadow-hover: rgba(229, 9, 20, 0.5);
+    --shadow-card: rgba(0, 0, 0, 0.6);
+}
+
+body.light-mode {
+    --bg-dark: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+    --text-color: #1a1a1a;
+    --text-secondary: #666;
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --card-gradient: rgba(255, 255, 255, 0.95);
+    --input-bg: rgba(255, 255, 255, 0.9);
+    --shadow-card: rgba(0, 0, 0, 0.1);
+}
+
+body {
+    background: var(--bg-dark);
+    color: var(--text-color);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ============================================
+   LANGUAGE & THEME CONTROLS
+   ============================================ */
+
+.nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.language-switcher {
+    display: flex;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 5px;
+    border-radius: 25px;
+}
+
+.lang-btn {
+    background: transparent;
+    border: none;
+    padding: 8px 12px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    border-radius: 20px;
+    transition: 0.3s;
+    opacity: 0.5;
+}
+
+.lang-btn.active {
+    background: var(--primary-color);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.lang-btn:hover {
+    opacity: 1;
+}
+
+.theme-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    padding: 10px 15px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1.3rem;
+    transition: 0.3s;
+}
+
+.theme-toggle:hover {
+    background: var(--primary-color);
+    transform: scale(1.1);
+}
+
+/* RTL Support */
+[dir="rtl"] .nav-container {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .hero-stats {
+    direction: rtl;
+}
+
+[dir="rtl"] .quick-actions {
+    direction: rtl;
+}
+
+/* Light Mode Adjustments */
+body.light-mode .navbar {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .nav-brand {
+    color: var(--primary-color);
+}
+
+body.light-mode .hero-section {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(240, 240, 240, 0.9) 100%),
+        url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1920&q=80') center/cover;
+}
+
+body.light-mode .hero-title {
+    color: var(--primary-color);
+    text-shadow: 0 2px 10px rgba(229, 9, 20, 0.3);
+}
+
+body.light-mode .hero-subtitle {
+    color: #333;
+}
+
+body.light-mode .stat-label {
+    color: #666;
+}
+
+body.light-mode .movie-card {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .footer {
+    background: rgba(255, 255, 255, 0.95);
+    border-top-color: var(--primary-color);
+}
+
+body.light-mode input,
+body.light-mode button {
+    color: var(--text-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav-controls {
+        gap: 8px;
+    }
+
+    .lang-btn {
+        font-size: 1.1rem;
+        padding: 6px 10px;
+    }
+
+    .theme-toggle {
+        font-size: 1.1rem;
+        padding: 8px 12px;
+    }
+}
+
+/* ============================================
+   MOBILE RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablet & Mobile */
+@media (max-width: 1024px) {
+    .container {
+        padding: 20px;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.2rem;
+    }
+
+    .movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+}
+
+/* Mobile Only */
+@media (max-width: 768px) {
+
+    /* Navigation */
+    .navbar {
+        padding: 15px 20px;
+    }
+
+    .nav-container {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .nav-brand {
+        font-size: 1.3rem;
+    }
+
+    .logo-icon {
+        font-size: 1.8rem;
+    }
+
+    .nav-tagline {
+        display: none;
+    }
+
+    .nav-controls {
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .lang-btn {
+        font-size: 1rem;
+        padding: 6px 10px;
+    }
+
+    .theme-toggle {
+        font-size: 1rem;
+        padding: 8px 12px;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        min-height: 60vh;
+        padding: 40px 20px;
+    }
+
+    .hero-title {
+        font-size: 2rem;
+        margin-bottom: 15px;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
+    .hero-stats {
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .stat-item {
+        flex-direction: row;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+    }
+
+    .stat-label {
+        font-size: 0.95rem;
+    }
+
+    .hero-scroll-indicator {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    .scroll-arrow {
+        font-size: 1.2rem;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        flex-direction: column;
+        gap: 12px;
+        padding: 20px;
+    }
+
+    .quick-btn {
+        width: 100%;
+        padding: 15px 25px;
+        font-size: 1rem;
+    }
+
+    /* Search Section */
+    .add-movie-section {
+        padding: 30px 20px;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .section-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .search-box-container {
+        flex-direction: column !important;
+        gap: 12px !important;
+        padding: 0 10px;
+    }
+
+    #movieSearchInput {
+        min-width: 100% !important;
+        max-width: 100% !important;
+        padding: 15px 20px !important;
+        font-size: 1rem !important;
+    }
+
+    #movieSearchBtn {
+        width: 100%;
+        padding: 15px 30px !important;
+        font-size: 1rem !important;
+    }
+
+    /* Movies Grid */
+    .movies-section {
+        padding: 30px 15px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .movies-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px;
+        padding: 0 5px;
+    }
+
+    .movie-card {
+        max-width: 100%;
+    }
+
+    .view-controls {
+        align-self: flex-end;
+    }
+
+    .view-btn {
+        padding: 8px 12px;
+        font-size: 1.2rem;
+    }
+
+    /* Footer */
+    .footer {
+        padding: 30px 20px 20px;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        gap: 25px;
+        text-align: center;
+    }
+
+    .footer-section h3,
+    .footer-section h4 {
+        font-size: 1.1rem;
+    }
+
+    .footer-section p {
+        font-size: 0.9rem;
+    }
+
+    .footer-bottom {
+        margin-top: 20px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Small Mobile (iPhone SE, etc.) */
+@media (max-width: 375px) {
+    .hero-title {
+        font-size: 1.8rem;
+    }
+
+    .hero-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .quick-btn {
+        padding: 12px 20px;
+        font-size: 0.95rem;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+    }
+
+    #movieSearchInput,
+    #movieSearchBtn {
+        font-size: 0.95rem !important;
+    }
+
+    .movie-card h3 {
+        font-size: 1.2rem !important;
+    }
+}
+
+/* Landscape Mobile */
+@media (max-width: 900px) and (orientation: landscape) {
+    .hero-section {
+        min-height: 100vh;
+    }
+
+    .hero-stats {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+    }
+}
+
+/* Touch Optimization */
+@media (hover: none) and (pointer: coarse) {
+
+    .quick-btn,
+    .lang-btn,
+    .theme-toggle,
+    .view-btn,
+    #movieSearchBtn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .movie-card:active {
+        transform: scale(0.98);
+    }
+
+    a {
+        -webkit-tap-highlight-color: rgba(229, 9, 20, 0.2);
+    }
+}
+
+/* Prevent horizontal scroll */
+body {
+    overflow-x: hidden;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* ============================================
    END OF STYLESHEET
    ============================================ */
