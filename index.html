@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог фильмов</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <h1>🎬 Каталог фильмов</h1>
+        <p>Откройте для себя лучшие фильмы и сериалы</p>
+    </header>
+
+    <main>
+        <!-- Секция фильтрации -->
+        <section class="filters-section">
+            <h2>Поиск и фильтрация</h2>
+
+            <div class="filter-group">
+                <label>Жанр:</label>
+                <select id="genreFilter">
+                    <option value="">Все</option>
+                    <option value="Боевик">Боевик</option>
+                    <option value="Комедия">Комедия</option>
+                    <option value="Драма">Драма</option>
+                    <option value="Ужасы">Ужасы</option>
+                    <option value="Романтика">Романтика</option>
+                    <option value="Фантастика">Фантастика</option>
+                    <option value="Триллер">Триллер</option>
+                    <option value="Приключения">Приключения</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Год выпуска:</label>
+                <select id="yearFilter">
+                    <option value="">Все</option>
+                    <option value="2024-2026">2024-2026</option>
+                    <option value="2020-2023">2020-2023</option>
+                    <option value="2010-2019">2010-2019</option>
+                    <option value="2000-2009">2000-2009</option>
+                    <option value="1990-1999">1990-1999</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Рейтинг:</label>
+                <select id="ratingFilter">
+                    <option value="">Все</option>
+                    <option value="9">⭐ 9+</option>
+                    <option value="8">⭐ 8+</option>
+                    <option value="7">⭐ 7+</option>
+                    <option value="6">⭐ 6+</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Страна:</label>
+                <select id="countryFilter">
+                    <option value="">Все</option>
+                    <option value="Россия">Россия</option>
+                    <option value="США">США</option>
+                    <option value="Великобритания">Великобритания</option>
+                    <option value="Франция">Франция</option>
+                    <option value="Южная Корея">Южная Корея</option>
+                </select>
+            </div>
+
+            <button id="applyFilters" class="btn-primary">Применить фильтр</button>
+            <button id="resetFilters" class="btn-secondary">Сбросить</button>
+        </section>
+
+        <!-- Секция добавления нового фильма -->
+        <section class="add-movie-section">
+            <h2>Добавить новый фильм</h2>
+
+            <form id="addMovieForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Название фильма: <span class="required">*</span></label>
+                        <input type="text" id="movieTitle" required placeholder="Например: Брат">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Жанр: <span class="required">*</span></label>
+                        <select id="movieGenre" required>
+                            <option value="">Выберите жанр</option>
+                            <option value="Боевик">Боевик</option>
+                            <option value="Комедия">Комедия</option>
+                            <option value="Драма">Драма</option>
+                            <option value="Ужасы">Ужасы</option>
+                            <option value="Романтика">Романтика</option>
+                            <option value="Фантастика">Фантастика</option>
+                            <option value="Триллер">Триллер</option>
+                            <option value="Приключения">Приключения</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Год выпуска: <span class="required">*</span></label>
+                        <input type="number" id="movieYear" min="1900" max="2026" required placeholder="2024">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Рейтинг (от 10): <span class="required">*</span></label>
+                        <input type="number" id="movieRating" min="0" max="10" step="0.1" required placeholder="8.5">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Режиссёр: <span class="required">*</span></label>
+                        <input type="text" id="movieDirector" required placeholder="Алексей Балабанов">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Страна производства: <span class="required">*</span></label>
+                        <input type="text" id="movieCountry" required placeholder="Россия">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Главные актёры: <span class="required">*</span></label>
+                    <input type="text" id="movieActors" placeholder="Разделите запятыми" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Ссылка на постер: <span class="required">*</span></label>
+                    <input type="url" id="moviePoster" placeholder="https://example.com/poster.jpg" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Описание: <span class="required">*</span></label>
+                    <textarea id="movieDescription" rows="4" required
+                        placeholder="Краткое описание сюжета фильма..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary">➕ Добавить фильм</button>
+            </form>
+        </section>
+
+        <!-- Секция отображения фильмов -->
+        <section class="movies-section">
+            <h2>Список фильмов <span id="movieCount" class="movie-count"></span></h2>
+            <div id="moviesGrid" class="movies-grid">
+                <!-- Здесь будут отображаться фильмы -->
+            </div>
+            <div id="noResults" class="no-results" style="display: none;">
+                <p>😔 Фильмы не найдены</p>
+                <p>Попробуйте изменить параметры фильтра</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 Каталог фильмов | Курсовая работа</p>
+    </footer>
+
+    <!-- Firebase SDK (compat version) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCt-fBVSNwRjvodObO-ftktPNb9IDV0ScY",
+            authDomain: "movie-catalog-2026-6d35e.firebaseapp.com",
+            projectId: "movie-catalog-2026-6d35e",
+            storageBucket: "movie-catalog-2026-6d35e.firebasestorage.app",
+            messagingSenderId: "1080152049108",
+            appId: "1:1080152049108:web:1cce59fd6b8fd960840241",
+            measurementId: "G-M5KWXX1FCS"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        console.log('%c✅ Firebase подключён!', 'color: #4CAF50; font-size: 16px; font-weight: bold;');
+    </script>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
