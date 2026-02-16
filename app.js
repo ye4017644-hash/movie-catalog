@@ -1,162 +1,177 @@
 // OMDb API Configuration
-const API_KEY = '7fa8063c'; 
-const API_URL = 'https://www.omdbapi.com/';
+const OMDB_API_KEY = '7fa8063c';
+const OMDB_API_URL = 'https://www.omdbapi.com/';
 
-// تغيير اسم المتغير لتجنب التعارض مع Firebase
-let movieAppDb = null; 
-
-// عند تحميل الصفحة
+// تهيئة التطبيق
 window.addEventListener('DOMContentLoaded', async () => {
-    console.log('%c🎬 Movie App Started!', 'color: #ffd700; font-size: 16px; font-weight: bold;');
+    console.log('%c🎬 Movie App Started!', 'color: #ffd700; font-size: 18px; font-weight: bold;');
     
-    // محاولة الاتصال بـ Firebase
-    if (typeof firebase !== 'undefined') {
-        try {
-            movieAppDb = firebase.firestore();
-            console.log('✅ Firebase Connected');
-        } catch (e) {
-            console.warn('⚠️ Firebase not connected (Local Mode)');
-        }
-    }
-
-    // تجهيز واجهة البحث
-    setupSearchUI();
-
-    // عرض أفلام مقترحة فورًا عشان الصفحة ماتبقاش فاضية
-    loadFeaturedMovies();
+    // إخفاء الفلاتر القديمة
+    const filtersSection = document.querySelector('.filters-section');
+    if (filtersSection) filtersSection.style.display = 'none';
+    
+    // تحويل قسم الإضافة لبحث
+    setupSearchInterface();
+    
+    // عرض أفلام مقترحة
+    loadPopularMovies();
 });
 
-// تحميل أفلام مقترحة عند الفتح
-async function loadFeaturedMovies() {
-    const featuredTitles = ["Inception", "Interstellar", "The Dark Knight", "Avengers", "Joker", "Titanic", "Avatar", "Matrix"];
-    const moviesGrid = document.getElementById('moviesGrid');
+// إعداد واجهة البحث
+function setupSearchInterface() {
+    const addSection = document.querySelector('.add-movie-section');
+    if (!addSection) return;
     
-    if(moviesGrid) {
-        moviesGrid.innerHTML = '<div class="loading" style="grid-column: 1/-1; text-align: center; font-size: 1.2rem; padding: 20px;">⏳ جارٍ تحميل الأفلام المقترحة...</div>';
-    }
-
-    let movies = [];
-    for (const title of featuredTitles) {
-        const movie = await fetchMovieFromAPI(title);
-        if (movie) movies.push(movie);
-    }
+    addSection.innerHTML = `
+        <div style="text-align: center; max-width: 800px; margin: 0 auto; padding: 30px;">
+            <h2 style="margin-bottom: 25px; color: #2c3e50; font-size: 2rem;">🔍 ابحث عن الأفلام</h2>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <input type="text" id="movieSearchInput" 
+                       placeholder="اكتب اسم الفيلم بالإنجليزية (Batman, Joker, Avengers...)" 
+                       style="flex: 1; min-width: 300px; padding: 16px; border: 2px solid #ddd; border-radius: 10px; font-size: 1.1rem;">
+                <button id="movieSearchBtn" 
+                        style="padding: 16px 35px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1.1rem; transition: 0.3s;">
+                    بحث
+                </button>
+            </div>
+            <p style="margin-top: 15px; color: #777;">مثال: Spider-Man, Harry Potter, The Matrix</p>
+        </div>
+    `;
     
-    displayMovies(movies);
+    document.getElementById('movieSearchBtn').addEventListener('click', handleSearch);
+    document.getElementById('movieSearchInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleSearch();
+    });
 }
 
-// البحث في API
-async function searchMovies(query) {
-    if (!query) return;
+// معالج البحث
+async function handleSearch() {
+    const query = document.getElementById('movieSearchInput').value.trim();
+    if (!query) {
+        alert('من فضلك اكتب اسم فيلم!');
+        return;
+    }
     
-    showLoader();
+    showLoadingMessage('جارٍ البحث...');
+    
     try {
-        const response = await fetch(`${API_URL}?apikey=${API_KEY}&s=${query}`);
+        const response = await fetch(`${OMDB_API_URL}?apikey=${OMDB_API_KEY}&s=${query}`);
         const data = await response.json();
-
+        
         if (data.Response === "True") {
-            // جلب تفاصيل الأفلام (عشان التقييم والقصة)
             const detailedMovies = await Promise.all(
-                data.Search.slice(0, 8).map(m => fetchMovieFromAPI(m.Title))
+                data.Search.slice(0, 8).map(movie => getMovieDetails(movie.Title))
             );
-            const validMovies = detailedMovies.filter(m => m && m.Poster !== 'N/A');
-            displayMovies(validMovies.length > 0 ? validMovies : detailedMovies);
+            renderMovies(detailedMovies.filter(m => m));
         } else {
-            showError('عذراً، لم نجد نتائج لهذا الفيلم');
+            showErrorMessage('لم نجد نتائج لهذا البحث 😔');
         }
     } catch (error) {
-        console.error('Error:', error);
-        showError('خطأ في الاتصال بالإنترنت');
+        console.error('خطأ:', error);
+        showErrorMessage('خطأ في الاتصال بالإنترنت');
     }
 }
 
 // جلب تفاصيل فيلم واحد
-async function fetchMovieFromAPI(title) {
+async function getMovieDetails(title) {
     try {
-        const response = await fetch(`${API_URL}?apikey=${API_KEY}&t=${title}`);
+        const response = await fetch(`${OMDB_API_URL}?apikey=${OMDB_API_KEY}&t=${title}`);
         const data = await response.json();
         return data.Response === "True" ? data : null;
-    } catch (error) {
+    } catch {
         return null;
     }
 }
 
-// عرض الأفلام في الصفحة
-function displayMovies(movies) {
-    const moviesGrid = document.getElementById('moviesGrid');
-    const movieCount = document.getElementById('movieCount');
+// تحميل أفلام مشهورة عند الفتح
+async function loadPopularMovies() {
+    showLoadingMessage('تحميل الأفلام المقترحة...');
     
-    if (!moviesGrid) return;
+    const popularTitles = ["Inception", "The Dark Knight", "Interstellar", "Avengers", "Joker", "Titanic", "Avatar", "Gladiator"];
+    const movies = [];
     
-    moviesGrid.innerHTML = '';
-    if(movieCount) movieCount.textContent = `(${movies.length})`;
+    for (const title of popularTitles) {
+        const movie = await getMovieDetails(title);
+        if (movie) movies.push(movie);
+    }
+    
+    renderMovies(movies);
+}
 
+// عرض الأفلام
+function renderMovies(movies) {
+    const grid = document.getElementById('moviesGrid');
+    const count = document.getElementById('movieCount');
+    
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    if (count) count.textContent = `(${movies.length})`;
+    
+    if (movies.length === 0) {
+        showErrorMessage('لا توجد نتائج');
+        return;
+    }
+    
     movies.forEach(movie => {
-        const card = document.createElement('div');
-        card.className = 'movie-card';
-        card.style.cssText = 'display: flex; flex-direction: column; height: 100%; background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden;';
-
-        const posterUrl = movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/300x450?text=No+Poster';
-        
-        card.innerHTML = `
-            <div class="poster-container" style="position: relative; overflow: hidden; height: 400px;">
-                <img src="${posterUrl}" alt="${movie.Title}" style="width: 100%; height: 100%; object-fit: cover;">
-                <span style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #ffd700; padding: 5px 10px; border-radius: 20px; font-weight: bold;">
-                    ⭐ ${movie.imdbRating || 'N/A'}
-                </span>
-            </div>
-            <div style="padding: 15px; flex-grow: 1; display: flex; flex-direction: column;">
-                <h3 style="margin: 0 0 10px 0; color: #333;">${movie.Title}</h3>
-                <div style="font-size: 0.9rem; color: #666; margin-bottom: 5px;">📅 <b>السنة:</b> ${movie.Year}</div>
-                <div style="font-size: 0.9rem; color: #666; margin-bottom: 5px;">🎬 <b>النوع:</b> ${movie.Genre}</div>
-                <p style="font-size: 0.85rem; color: #777; margin-top: 10px; flex-grow: 1;">
-                    ${movie.Plot !== 'N/A' ? (movie.Plot.substring(0, 100) + '...') : 'وصف غير متاح'}
-                </p>
-                <a href="https://www.youtube.com/results?search_query=${movie.Title}+trailer" target="_blank" class="watch-btn" 
-                   style="display: block; width: 100%; padding: 10px; margin-top: 15px; background: #ff0000; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                   ▶ شاهد التريلر
-                </a>
-            </div>
-        `;
-        moviesGrid.appendChild(card);
+        const card = createMovieCard(movie);
+        grid.appendChild(card);
     });
 }
 
-// تحويل واجهة "إضافة فيلم" لواجهة "بحث"
-function setupSearchUI() {
-    const filtersSection = document.querySelector('.filters-section');
-    if (filtersSection) filtersSection.style.display = 'none';
-
-    const addSection = document.querySelector('.add-movie-section');
-    if (addSection) {
-        addSection.innerHTML = `
-            <div style="text-align: center; max-width: 800px; margin: 0 auto; padding: 20px;">
-                <h2 style="margin-bottom: 20px; color: #2c3e50;">🔍 ابحث عن أفلامك المفضلة</h2>
-                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                    <input type="text" id="searchInput" placeholder="اكتب اسم الفيلم بالإنجليزية (مثلاً: Batman)..." 
-                           style="flex: 1; min-width: 250px; padding: 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
-                    <button id="searchBtn" style="padding: 15px 30px; background: #4a90e2; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">بحث</button>
-                </div>
-            </div>
-        `;
-
-        const searchBtn = document.getElementById('searchBtn');
-        const searchInput = document.getElementById('searchInput');
-
-        if (searchBtn && searchInput) {
-            searchBtn.addEventListener('click', () => searchMovies(searchInput.value));
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') searchMovies(searchInput.value);
-            });
-        }
-    }
+// إنشاء كارت الفيلم
+function createMovieCard(movie) {
+    const card = document.createElement('div');
+    card.className = 'movie-card';
+    card.style.cssText = 'background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: 0.3s; cursor: pointer;';
+    
+    const poster = movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/300x450?text=No+Image';
+    
+    card.innerHTML = `
+        <div style="position: relative; height: 400px; overflow: hidden;">
+            <img src="${poster}" alt="${movie.Title}" style="width: 100%; height: 100%; object-fit: cover;">
+            <span style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.85); color: #ffd700; padding: 8px 14px; border-radius: 25px; font-weight: bold; font-size: 0.95rem;">
+                ⭐ ${movie.imdbRating || 'N/A'}
+            </span>
+        </div>
+        <div style="padding: 18px;">
+            <h3 style="margin: 0 0 12px 0; color: #2c3e50; font-size: 1.3rem;">${movie.Title}</h3>
+            <div style="color: #555; margin-bottom: 6px;"><strong>📅 السنة:</strong> ${movie.Year}</div>
+            <div style="color: #555; margin-bottom: 6px;"><strong>🎬 النوع:</strong> ${movie.Genre || 'N/A'}</div>
+            <div style="color: #555; margin-bottom: 10px;"><strong>⏱️ المدة:</strong> ${movie.Runtime || 'N/A'}</div>
+            <p style="color: #777; font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
+                ${movie.Plot && movie.Plot !== 'N/A' ? (movie.Plot.length > 120 ? movie.Plot.substring(0, 120) + '...' : movie.Plot) : 'لا يوجد وصف'}
+            </p>
+            <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(movie.Title + ' trailer')}" 
+               target="_blank" 
+               style="display: block; text-align: center; background: #e50914; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: 0.3s;"
+               onmouseover="this.style.background='#b20710'" 
+               onmouseout="this.style.background='#e50914'">
+                ▶ شاهد الإعلان
+            </a>
+        </div>
+    `;
+    
+    card.addEventListener('mouseenter', () => {
+        card.style.transform = 'translateY(-5px)';
+        card.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+    });
+    
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = 'translateY(0)';
+        card.style.boxShadow = '0 5px 20px rgba(0,0,0,0.1)';
+    });
+    
+    return card;
 }
 
-function showLoader() {
+// رسائل التحميل والأخطاء
+function showLoadingMessage(msg) {
     const grid = document.getElementById('moviesGrid');
-    if(grid) grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px;">⏳ جارٍ البحث...</div>';
+    if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; font-size: 1.3rem; color: #667eea;">⏳ ${msg}</div>`;
 }
 
-function showError(msg) {
+function showErrorMessage(msg) {
     const grid = document.getElementById('moviesGrid');
-    if(grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; color: #d32f2f; padding:20px; font-size: 1.2rem;">❌ ${msg}</div>`;
+    if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; font-size: 1.3rem; color: #e53e3e;">❌ ${msg}</div>`;
 }
