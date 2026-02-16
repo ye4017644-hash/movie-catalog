@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" dir="ltr">
 
 <head>
     <meta charset="UTF-8">
@@ -8,96 +8,100 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
-
-    <!-- Preconnect للسرعة -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 
 <body>
-    <!-- Navigation Bar الاحترافي -->
+    <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">
                 <span class="logo-icon">🎬</span>
                 <span class="logo-text">КИНОПОРТАЛ</span>
             </div>
-            <div class="nav-menu">
-                <a href="#home" class="nav-link active">Главная</a>
-                <a href="#trending" class="nav-link">Популярное</a>
-                <a href="#search" class="nav-link">Поиск</a>
+            <div class="nav-controls">
+                <!-- Language Switcher -->
+                <div class="language-switcher">
+                    <button class="lang-btn active" data-lang="ru" title="Русский">🇷🇺</button>
+                    <button class="lang-btn" data-lang="ar" title="العربية">🇸🇦</button>
+                </div>
+                <!-- Theme Switcher -->
+                <button class="theme-toggle" id="themeToggle" title="Сменить тему">
+                    <span class="theme-icon">🌙</span>
+                </button>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section (قسم البطل) -->
+    <!-- Hero Section -->
     <section class="hero-section">
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h1 class="hero-title">Откройте мир кино</h1>
-            <p class="hero-subtitle">Тысячи фильмов и сериалов в одном месте</p>
+            <h1 class="hero-title" data-i18n="heroTitle">Откройте мир кино</h1>
+            <p class="hero-subtitle" data-i18n="heroSubtitle">Тысячи фильмов в одном месте</p>
             <div class="hero-stats">
                 <div class="stat-item">
-                    <span class="stat-number" id="totalMovies">0</span>
-                    <span class="stat-label">Фильмов</span>
+                    <span class="stat-number">🎬</span>
+                    <span class="stat-label" data-i18n="statMovies">Миллионы фильмов</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">⭐ 8.5+</span>
-                    <span class="stat-label">Средний рейтинг</span>
+                    <span class="stat-number">⭐</span>
+                    <span class="stat-label" data-i18n="statRating">Высокий рейтинг</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-number">🌍</span>
-                    <span class="stat-label">Весь мир</span>
+                    <span class="stat-label" data-i18n="statWorld">Весь мир</span>
                 </div>
             </div>
         </div>
-        <div class="hero-scroll-indicator">
+        <div class="hero-scroll-indicator" onclick="scrollToSearch()">
             <div class="scroll-arrow">↓</div>
-            <span>Прокрутите вниз</span>
+            <span data-i18n="scrollText">Начните поиск</span>
         </div>
     </section>
 
     <main class="container">
-        <!-- Quick Actions (أزرار سريعة) -->
+        <!-- Quick Actions -->
         <section class="quick-actions">
             <button class="quick-btn" onclick="scrollToSearch()">
-                🔍 Поиск фильмов
+                <span>🔍</span>
+                <span data-i18n="btnSearch">Поиск фильмов</span>
             </button>
             <button class="quick-btn" onclick="loadRandomMovie()">
-                🎲 Случайный фильм
+                <span>🎲</span>
+                <span data-i18n="btnRandom">Случайный фильм</span>
             </button>
             <button class="quick-btn" onclick="loadTopRated()">
-                🏆 Топ рейтинг
+                <span>🏆</span>
+                <span data-i18n="btnTop">Топ рейтинг</span>
             </button>
         </section>
 
-        <!-- Search Section (مخفي الفلاتر القديمة) -->
-        <section class="filters-section" style="display: none;"></section>
-
-        <!-- Advanced Search Interface -->
-        <section class="add-movie-section" id="search">
+        <!-- Search Section -->
+        <section class="add-movie-section" id="searchSection">
             <div class="search-header">
                 <h2 class="section-title">
                     <span class="title-icon">🔍</span>
-                    Поиск фильмов
+                    <span data-i18n="searchTitle">Поиск фильмов</span>
                 </h2>
-                <p class="section-subtitle">Найдите любой фильм по названию</p>
+                <p class="section-subtitle" data-i18n="searchSubtitle">Найдите любой фильм по названию</p>
             </div>
         </section>
 
         <!-- Movies Display Section -->
-        <section class="movies-section" id="trending">
+        <section class="movies-section">
             <div class="section-header">
                 <h2 class="section-title">
                     <span class="title-icon">🔥</span>
-                    Популярные фильмы
+                    <span data-i18n="popularTitle">Популярные фильмы</span>
                     <span id="movieCount" class="movie-count"></span>
                 </h2>
                 <div class="view-controls">
-                    <button class="view-btn active" data-view="grid" title="Сетка">
+                    <button class="view-btn active" onclick="changeView('grid')" title="Сетка">
                         <span>⊞</span>
                     </button>
-                    <button class="view-btn" data-view="list" title="Список">
+                    <button class="view-btn" onclick="changeView('list')" title="Список">
                         <span>☰</span>
                     </button>
                 </div>
@@ -109,40 +113,34 @@
 
             <div id="noResults" class="no-results" style="display: none;">
                 <div class="no-results-icon">🎭</div>
-                <h3>Фильмы не найдены</h3>
-                <p>Попробуйте изменить параметры поиска</p>
+                <h3 data-i18n="noResultsTitle">Фильмы не найдены</h3>
+                <p data-i18n="noResultsText">Попробуйте изменить параметры поиска</p>
             </div>
         </section>
     </main>
 
-    <!-- Footer محدّث -->
+    <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
                 <h3>🎬 КИНОПОРТАЛ</h3>
-                <p>Ваш проводник в мир кино</p>
+                <p data-i18n="footerTagline">Ваш проводник в мир кино</p>
             </div>
             <div class="footer-section">
-                <h4>О проекте</h4>
-                <p>Курсовая работа 2026</p>
-                <p>Веб-разработка</p>
+                <h4 data-i18n="footerAbout">О проекте</h4>
+                <p data-i18n="footerProject">Курсовая работа 2026</p>
+                <p data-i18n="footerDev">Веб-разработка</p>
             </div>
             <div class="footer-section">
-                <h4>Технологии</h4>
+                <h4 data-i18n="footerTech">Технологии</h4>
                 <p>HTML5 • CSS3 • JavaScript</p>
                 <p>Firebase • OMDb API</p>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2026 Кинопортал. Все права защищены.</p>
+            <p data-i18n="footerCopyright">© 2026 Кинопортал. Все права защищены.</p>
         </div>
     </footer>
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
-        <div class="loading-spinner"></div>
-        <p>Загрузка...</p>
-    </div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -166,61 +164,43 @@
 
         // Helper functions
         function scrollToSearch() {
-            document.querySelector('.add-movie-section').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('searchSection').scrollIntoView({ behavior: 'smooth' });
         }
 
         function loadRandomMovie() {
-            const randomTitles = ["Inception", "Matrix", "Interstellar", "Joker", "Avatar"];
+            const randomTitles = ["Inception", "Matrix", "Interstellar", "Joker", "Avatar", "Titanic", "Gladiator"];
             const random = randomTitles[Math.floor(Math.random() * randomTitles.length)];
-            document.getElementById('movieSearchInput').value = random;
-            handleSearch();
+            const input = document.getElementById('movieSearchInput');
+            if (input) {
+                input.value = random;
+                handleSearch();
+                scrollToSearch();
+            }
         }
 
         function loadTopRated() {
-            const topMovies = ["The Shawshank Redemption", "The Godfather", "The Dark Knight"];
-            showNotification('Загрузка топ фильмов...', 'info');
-            setTimeout(() => {
-                document.getElementById('movieSearchInput').value = topMovies[0];
+            const topMovies = ["The Shawshank Redemption", "The Godfather", "The Dark Knight", "Pulp Fiction"];
+            const input = document.getElementById('movieSearchInput');
+            if (input) {
+                input.value = topMovies[Math.floor(Math.random() * topMovies.length)];
                 handleSearch();
-            }, 500);
+                scrollToSearch();
+            }
         }
 
-        // View switcher
-        document.addEventListener('DOMContentLoaded', () => {
-            const viewBtns = document.querySelectorAll('.view-btn');
+        function changeView(viewType) {
             const grid = document.getElementById('moviesGrid');
+            const buttons = document.querySelectorAll('.view-btn');
 
-            viewBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    viewBtns.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.view-btn').classList.add('active');
 
-                    if (btn.dataset.view === 'list') {
-                        grid.style.gridTemplateColumns = '1fr';
-                    } else {
-                        grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
-                    }
-                });
-            });
-
-            // Smooth scroll for nav links
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const target = link.getAttribute('href');
-                    document.querySelector(target).scrollIntoView({ behavior: 'smooth' });
-                });
-            });
-
-            // Update movie count animation
-            setInterval(() => {
-                const count = document.getElementById('movieCount');
-                if (count && count.textContent) {
-                    count.style.animation = 'pulse 0.5s ease';
-                    setTimeout(() => count.style.animation = '', 500);
-                }
-            }, 3000);
-        });
+            if (viewType === 'list') {
+                grid.style.gridTemplateColumns = '1fr';
+            } else {
+                grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
+            }
+        }
     </script>
 
     <script src="app.js"></script>
