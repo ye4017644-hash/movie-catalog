@@ -2,77 +2,107 @@
 const OMDB_API_KEY = '7fa8063c';
 const OMDB_API_URL = 'https://www.omdbapi.com/';
 
-// Инициализация приложения
 window.addEventListener('DOMContentLoaded', async () => {
-    console.log('%c🎬 Movie App Started!', 'color: #ffd700; font-size: 18px; font-weight: bold;');
-    
-    // Скрыть старые фильтры
+    console.log('%c🎬 Киноприложение запущено!', 'color: #e50914; font-size: 20px; font-weight: bold;');
+
+    // Скрыть старые секции
     const filtersSection = document.querySelector('.filters-section');
     if (filtersSection) filtersSection.style.display = 'none';
-    
-    // Настроить интерфейс поиска
+
+    applyNetflixStyles();
     setupSearchInterface();
-    
-    // Загрузить популярные фильмы
     loadPopularMovies();
 });
 
-// Настройка интерфейса поиска
+// تطبيق تصميم Netflix
+function applyNetflixStyles() {
+    document.body.style.background = '#141414';
+    document.body.style.color = '#fff';
+
+    const header = document.querySelector('header') || document.querySelector('.header');
+    if (header) {
+        header.style.background = 'linear-gradient(90deg, #000000 0%, #e50914 100%)';
+        header.style.boxShadow = '0 4px 20px rgba(229, 9, 20, 0.3)';
+    }
+}
+
 function setupSearchInterface() {
     const addSection = document.querySelector('.add-movie-section');
     if (!addSection) return;
-    
+
+    addSection.style.background = 'rgba(0,0,0,0.6)';
+    addSection.style.padding = '40px 20px';
+    addSection.style.borderRadius = '15px';
+
     addSection.innerHTML = `
-        <div style="text-align: center; max-width: 800px; margin: 0 auto; padding: 30px;">
-            <h2 style="margin-bottom: 25px; color: #2c3e50; font-size: 2rem;">🔍 Поиск фильмов</h2>
-            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        <div style="text-align: center; max-width: 900px; margin: 0 auto;">
+            <h2 style="margin-bottom: 30px; color: #e50914; font-size: 2.5rem; text-shadow: 0 0 20px rgba(229,9,20,0.5);">
+                🎬 Поиск фильмов
+            </h2>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                 <input type="text" id="movieSearchInput" 
-                       placeholder="Введите название фильма (Batman, Joker, Avengers...)" 
-                       style="flex: 1; min-width: 300px; padding: 16px; border: 2px solid #ddd; border-radius: 10px; font-size: 1.1rem;">
+                       placeholder="Введите название (The Matrix, Avatar, Inception...)" 
+                       style="flex: 1; min-width: 350px; padding: 18px 25px; border: 2px solid #e50914; background: rgba(0,0,0,0.8); color: white; border-radius: 50px; font-size: 1.15rem; outline: none; transition: 0.3s;">
                 <button id="movieSearchBtn" 
-                        style="padding: 16px 35px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1.1rem; transition: 0.3s;">
-                    Искать
+                        style="padding: 18px 40px; background: #e50914; color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; font-size: 1.15rem; transition: 0.3s; box-shadow: 0 4px 15px rgba(229,9,20,0.4);">
+                    🔍 Найти
                 </button>
             </div>
-            <p style="margin-top: 15px; color: #777;">Например: Spider-Man, Harry Potter, The Matrix</p>
+            <p style="margin-top: 20px; color: #999; font-size: 1rem;">Например: Avengers, Harry Potter, Joker</p>
         </div>
     `;
-    
-    document.getElementById('movieSearchBtn').addEventListener('click', handleSearch);
-    document.getElementById('movieSearchInput').addEventListener('keypress', (e) => {
+
+    const searchBtn = document.getElementById('movieSearchBtn');
+    const searchInput = document.getElementById('movieSearchInput');
+
+    searchBtn.addEventListener('mouseenter', () => {
+        searchBtn.style.background = '#b20710';
+        searchBtn.style.transform = 'scale(1.05)';
+    });
+    searchBtn.addEventListener('mouseleave', () => {
+        searchBtn.style.background = '#e50914';
+        searchBtn.style.transform = 'scale(1)';
+    });
+
+    searchInput.addEventListener('focus', () => {
+        searchInput.style.boxShadow = '0 0 20px rgba(229,9,20,0.5)';
+    });
+    searchInput.addEventListener('blur', () => {
+        searchInput.style.boxShadow = 'none';
+    });
+
+    searchBtn.addEventListener('click', handleSearch);
+    searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleSearch();
     });
 }
 
-// Обработка поиска
 async function handleSearch() {
     const query = document.getElementById('movieSearchInput').value.trim();
     if (!query) {
-        alert('Пожалуйста, введите название фильма!');
+        showNotification('Введите название фильма!', 'warning');
         return;
     }
-    
-    showLoadingMessage('Поиск фильмов...');
-    
+
+    showLoadingMessage('Ищем фильмы...');
+
     try {
         const response = await fetch(`${OMDB_API_URL}?apikey=${OMDB_API_KEY}&s=${query}`);
         const data = await response.json();
-        
+
         if (data.Response === "True") {
             const detailedMovies = await Promise.all(
-                data.Search.slice(0, 8).map(movie => getMovieDetails(movie.Title))
+                data.Search.slice(0, 12).map(movie => getMovieDetails(movie.Title))
             );
             renderMovies(detailedMovies.filter(m => m));
         } else {
-            showErrorMessage('Фильмы не найдены 😔');
+            showErrorMessage('Фильмы не найдены');
         }
     } catch (error) {
-        console.error('Ошибка:', error);
-        showErrorMessage('Ошибка подключения к интернету');
+        showErrorMessage('Ошибка подключения');
     }
 }
 
-// Получение деталей фильма
 async function getMovieDetails(title) {
     try {
         const response = await fetch(`${OMDB_API_URL}?apikey=${OMDB_API_KEY}&t=${title}`);
@@ -83,95 +113,135 @@ async function getMovieDetails(title) {
     }
 }
 
-// Загрузка популярных фильмов
 async function loadPopularMovies() {
     showLoadingMessage('Загрузка популярных фильмов...');
-    
-    const popularTitles = ["Inception", "The Dark Knight", "Interstellar", "Avengers", "Joker", "Titanic", "Avatar", "Gladiator"];
+
+    const popularTitles = ["Inception", "The Dark Knight", "Interstellar", "Avengers", "Joker", "Titanic", "Avatar", "Gladiator", "Matrix", "Pulp Fiction", "Fight Club", "Shawshank Redemption"];
     const movies = [];
-    
+
     for (const title of popularTitles) {
         const movie = await getMovieDetails(title);
         if (movie) movies.push(movie);
     }
-    
+
     renderMovies(movies);
 }
 
-// Отображение фильмов
 function renderMovies(movies) {
     const grid = document.getElementById('moviesGrid');
     const count = document.getElementById('movieCount');
-    
+
     if (!grid) return;
-    
+
+    // تعديل شكل الـ Grid
+    grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
+    grid.style.gap = '30px';
+    grid.style.padding = '30px 0';
+
     grid.innerHTML = '';
     if (count) count.textContent = `(${movies.length})`;
-    
+
     if (movies.length === 0) {
         showErrorMessage('Нет результатов');
         return;
     }
-    
+
     movies.forEach(movie => {
         const card = createMovieCard(movie);
         grid.appendChild(card);
     });
 }
 
-// Создание карточки фильма
 function createMovieCard(movie) {
     const card = document.createElement('div');
     card.className = 'movie-card';
-    card.style.cssText = 'background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: 0.3s; cursor: pointer;';
-    
-    const poster = movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/300x450?text=No+Image';
-    
+    card.style.cssText = `
+        background: #1c1c1c;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+        position: relative;
+    `;
+
+    const poster = movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/300x450/141414/e50914?text=No+Poster';
+
     card.innerHTML = `
-        <div style="position: relative; height: 400px; overflow: hidden;">
-            <img src="${poster}" alt="${movie.Title}" style="width: 100%; height: 100%; object-fit: cover;">
-            <span style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.85); color: #ffd700; padding: 8px 14px; border-radius: 25px; font-weight: bold; font-size: 0.95rem;">
+        <div style="position: relative; height: 420px; overflow: hidden;">
+            <img src="${poster}" alt="${movie.Title}" 
+                 style="width: 100%; height: 100%; object-fit: cover; transition: 0.4s;">
+            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 50%);"></div>
+            <span style="position: absolute; top: 15px; right: 15px; background: #e50914; color: white; padding: 8px 15px; border-radius: 30px; font-weight: bold; font-size: 1rem; box-shadow: 0 4px 10px rgba(229,9,20,0.5);">
                 ⭐ ${movie.imdbRating || 'N/A'}
             </span>
+            <h3 style="position: absolute; bottom: 15px; left: 15px; right: 15px; margin: 0; color: white; font-size: 1.4rem; text-shadow: 0 2px 10px rgba(0,0,0,0.8);">
+                ${movie.Title}
+            </h3>
         </div>
-        <div style="padding: 18px;">
-            <h3 style="margin: 0 0 12px 0; color: #2c3e50; font-size: 1.3rem;">${movie.Title}</h3>
-            <div style="color: #555; margin-bottom: 6px;"><strong>📅 Год:</strong> ${movie.Year}</div>
-            <div style="color: #555; margin-bottom: 6px;"><strong>🎬 Жанр:</strong> ${movie.Genre || 'N/A'}</div>
-            <div style="color: #555; margin-bottom: 10px;"><strong>⏱️ Продолжительность:</strong> ${movie.Runtime || 'N/A'}</div>
-            <p style="color: #777; font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px;">
-                ${movie.Plot && movie.Plot !== 'N/A' ? (movie.Plot.length > 120 ? movie.Plot.substring(0, 120) + '...' : movie.Plot) : 'Описание недоступно'}
+        <div style="padding: 20px;">
+            <div style="color: #aaa; margin-bottom: 8px; font-size: 0.95rem;">
+                <strong style="color: #e50914;">Год:</strong> ${movie.Year} | 
+                <strong style="color: #e50914;">Жанр:</strong> ${movie.Genre || 'N/A'}
+            </div>
+            <p style="color: #999; font-size: 0.9rem; line-height: 1.6; margin: 15px 0;">
+                ${movie.Plot && movie.Plot !== 'N/A' ? (movie.Plot.length > 100 ? movie.Plot.substring(0, 100) + '...' : movie.Plot) : 'Описание недоступно'}
             </p>
             <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(movie.Title + ' trailer')}" 
                target="_blank" 
-               style="display: block; text-align: center; background: #e50914; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: 0.3s;"
-               onmouseover="this.style.background='#b20710'" 
-               onmouseout="this.style.background='#e50914'">
+               style="display: block; text-align: center; background: #e50914; color: white; padding: 14px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: 0.3s; margin-top: 15px; box-shadow: 0 4px 15px rgba(229,9,20,0.3);">
                 ▶ Смотреть трейлер
             </a>
         </div>
     `;
-    
+
     card.addEventListener('mouseenter', () => {
-        card.style.transform = 'translateY(-5px)';
-        card.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        card.style.transform = 'translateY(-10px) scale(1.03)';
+        card.style.boxShadow = '0 15px 40px rgba(229,9,20,0.4)';
+        const img = card.querySelector('img');
+        if (img) img.style.transform = 'scale(1.1)';
     });
-    
+
     card.addEventListener('mouseleave', () => {
-        card.style.transform = 'translateY(0)';
-        card.style.boxShadow = '0 5px 20px rgba(0,0,0,0.1)';
+        card.style.transform = 'translateY(0) scale(1)';
+        card.style.boxShadow = '0 8px 25px rgba(0,0,0,0.5)';
+        const img = card.querySelector('img');
+        if (img) img.style.transform = 'scale(1)';
     });
-    
+
     return card;
 }
 
-// Сообщения загрузки и ошибок
 function showLoadingMessage(msg) {
     const grid = document.getElementById('moviesGrid');
-    if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; font-size: 1.3rem; color: #667eea;">⏳ ${msg}</div>`;
+    if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 80px; font-size: 1.5rem; color: #e50914;">⏳ ${msg}</div>`;
 }
 
 function showErrorMessage(msg) {
     const grid = document.getElementById('moviesGrid');
-    if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; font-size: 1.3rem; color: #e53e3e;">❌ ${msg}</div>`;
+    if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 80px; font-size: 1.5rem; color: #999;">❌ ${msg}</div>`;
 }
+
+function showNotification(msg, type) {
+    const notif = document.createElement('div');
+    notif.style.cssText = `
+        position: fixed; top: 30px; right: 30px; z-index: 10000;
+        background: ${type === 'warning' ? '#ff9800' : '#e50914'};
+        color: white; padding: 20px 30px; border-radius: 10px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        font-weight: bold; font-size: 1.1rem;
+        animation: slideIn 0.5s ease;
+    `;
+    notif.textContent = msg;
+    document.body.appendChild(notif);
+    setTimeout(() => notif.remove(), 3000);
+}
+
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+`;
+document.head.appendChild(style);
