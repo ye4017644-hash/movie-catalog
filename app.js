@@ -2,22 +2,22 @@
 const OMDB_API_KEY = '7fa8063c';
 const OMDB_API_URL = 'https://www.omdbapi.com/';
 
-// تهيئة التطبيق
+// Инициализация приложения
 window.addEventListener('DOMContentLoaded', async () => {
     console.log('%c🎬 Movie App Started!', 'color: #ffd700; font-size: 18px; font-weight: bold;');
     
-    // إخفاء الفلاتر القديمة
+    // Скрыть старые фильтры
     const filtersSection = document.querySelector('.filters-section');
     if (filtersSection) filtersSection.style.display = 'none';
     
-    // تحويل قسم الإضافة لبحث
+    // Настроить интерфейс поиска
     setupSearchInterface();
     
-    // عرض أفلام مقترحة
+    // Загрузить популярные фильмы
     loadPopularMovies();
 });
 
-// إعداد واجهة البحث
+// Настройка интерфейса поиска
 function setupSearchInterface() {
     const addSection = document.querySelector('.add-movie-section');
     if (!addSection) return;
@@ -44,7 +44,7 @@ function setupSearchInterface() {
     });
 }
 
-// معالج البحث
+// Обработка поиска
 async function handleSearch() {
     const query = document.getElementById('movieSearchInput').value.trim();
     if (!query) {
@@ -72,7 +72,7 @@ async function handleSearch() {
     }
 }
 
-// جلب تفاصيل فيلم واحد
+// Получение деталей фильма
 async function getMovieDetails(title) {
     try {
         const response = await fetch(`${OMDB_API_URL}?apikey=${OMDB_API_KEY}&t=${title}`);
@@ -83,7 +83,7 @@ async function getMovieDetails(title) {
     }
 }
 
-// تحميل أفلام مشهورة عند الفتح
+// Загрузка популярных фильмов
 async function loadPopularMovies() {
     showLoadingMessage('Загрузка популярных фильмов...');
     
@@ -98,7 +98,7 @@ async function loadPopularMovies() {
     renderMovies(movies);
 }
 
-// عرض الأفلام
+// Отображение фильмов
 function renderMovies(movies) {
     const grid = document.getElementById('moviesGrid');
     const count = document.getElementById('movieCount');
@@ -119,7 +119,7 @@ function renderMovies(movies) {
     });
 }
 
-// إنشاء كارت الفيلم
+// Создание карточки фильма
 function createMovieCard(movie) {
     const card = document.createElement('div');
     card.className = 'movie-card';
@@ -165,7 +165,7 @@ function createMovieCard(movie) {
     return card;
 }
 
-// رسائل التحميل والأخطاء
+// Сообщения загрузки и ошибок
 function showLoadingMessage(msg) {
     const grid = document.getElementById('moviesGrid');
     if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; font-size: 1.3rem; color: #667eea;">⏳ ${msg}</div>`;
