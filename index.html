@@ -4,164 +4,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Каталог фильмов</title>
+    <title>🎬 Кинопортал - Откройте мир кино</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+
+    <!-- Preconnect للسرعة -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 
 <body>
-    <header>
-        <h1>🎬 Каталог фильмов</h1>
-        <p>Откройте для себя лучшие фильмы и сериалы</p>
-    </header>
-
-    <main>
-        <!-- Секция фильтрации -->
-        <section class="filters-section">
-            <h2>Поиск и фильтрация</h2>
-
-            <div class="filter-group">
-                <label>Жанр:</label>
-                <select id="genreFilter">
-                    <option value="">Все</option>
-                    <option value="Боевик">Боевик</option>
-                    <option value="Комедия">Комедия</option>
-                    <option value="Драма">Драма</option>
-                    <option value="Ужасы">Ужасы</option>
-                    <option value="Романтика">Романтика</option>
-                    <option value="Фантастика">Фантастика</option>
-                    <option value="Триллер">Триллер</option>
-                    <option value="Приключения">Приключения</option>
-                </select>
+    <!-- Navigation Bar الاحترافي -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="logo-icon">🎬</span>
+                <span class="logo-text">КИНОПОРТАЛ</span>
             </div>
-
-            <div class="filter-group">
-                <label>Год выпуска:</label>
-                <select id="yearFilter">
-                    <option value="">Все</option>
-                    <option value="2024-2026">2024-2026</option>
-                    <option value="2020-2023">2020-2023</option>
-                    <option value="2010-2019">2010-2019</option>
-                    <option value="2000-2009">2000-2009</option>
-                    <option value="1990-1999">1990-1999</option>
-                </select>
+            <div class="nav-menu">
+                <a href="#home" class="nav-link active">Главная</a>
+                <a href="#trending" class="nav-link">Популярное</a>
+                <a href="#search" class="nav-link">Поиск</a>
             </div>
+        </div>
+    </nav>
 
-            <div class="filter-group">
-                <label>Рейтинг:</label>
-                <select id="ratingFilter">
-                    <option value="">Все</option>
-                    <option value="9">⭐ 9+</option>
-                    <option value="8">⭐ 8+</option>
-                    <option value="7">⭐ 7+</option>
-                    <option value="6">⭐ 6+</option>
-                </select>
+    <!-- Hero Section (قسم البطل) -->
+    <section class="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Откройте мир кино</h1>
+            <p class="hero-subtitle">Тысячи фильмов и сериалов в одном месте</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalMovies">0</span>
+                    <span class="stat-label">Фильмов</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">⭐ 8.5+</span>
+                    <span class="stat-label">Средний рейтинг</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">🌍</span>
+                    <span class="stat-label">Весь мир</span>
+                </div>
             </div>
+        </div>
+        <div class="hero-scroll-indicator">
+            <div class="scroll-arrow">↓</div>
+            <span>Прокрутите вниз</span>
+        </div>
+    </section>
 
-            <div class="filter-group">
-                <label>Страна:</label>
-                <select id="countryFilter">
-                    <option value="">Все</option>
-                    <option value="Россия">Россия</option>
-                    <option value="США">США</option>
-                    <option value="Великобритания">Великобритания</option>
-                    <option value="Франция">Франция</option>
-                    <option value="Южная Корея">Южная Корея</option>
-                </select>
-            </div>
-
-            <button id="applyFilters" class="btn-primary">Применить фильтр</button>
-            <button id="resetFilters" class="btn-secondary">Сбросить</button>
+    <main class="container">
+        <!-- Quick Actions (أزرار سريعة) -->
+        <section class="quick-actions">
+            <button class="quick-btn" onclick="scrollToSearch()">
+                🔍 Поиск фильмов
+            </button>
+            <button class="quick-btn" onclick="loadRandomMovie()">
+                🎲 Случайный фильм
+            </button>
+            <button class="quick-btn" onclick="loadTopRated()">
+                🏆 Топ рейтинг
+            </button>
         </section>
 
-        <!-- Секция добавления нового фильма -->
-        <section class="add-movie-section">
-            <h2>Добавить новый фильм</h2>
+        <!-- Search Section (مخفي الفلاتر القديمة) -->
+        <section class="filters-section" style="display: none;"></section>
 
-            <form id="addMovieForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Название фильма: <span class="required">*</span></label>
-                        <input type="text" id="movieTitle" required placeholder="Например: Брат">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Жанр: <span class="required">*</span></label>
-                        <select id="movieGenre" required>
-                            <option value="">Выберите жанр</option>
-                            <option value="Боевик">Боевик</option>
-                            <option value="Комедия">Комедия</option>
-                            <option value="Драма">Драма</option>
-                            <option value="Ужасы">Ужасы</option>
-                            <option value="Романтика">Романтика</option>
-                            <option value="Фантастика">Фантастика</option>
-                            <option value="Триллер">Триллер</option>
-                            <option value="Приключения">Приключения</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Год выпуска: <span class="required">*</span></label>
-                        <input type="number" id="movieYear" min="1900" max="2026" required placeholder="2024">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Рейтинг (от 10): <span class="required">*</span></label>
-                        <input type="number" id="movieRating" min="0" max="10" step="0.1" required placeholder="8.5">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Режиссёр: <span class="required">*</span></label>
-                        <input type="text" id="movieDirector" required placeholder="Алексей Балабанов">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Страна производства: <span class="required">*</span></label>
-                        <input type="text" id="movieCountry" required placeholder="Россия">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Главные актёры: <span class="required">*</span></label>
-                    <input type="text" id="movieActors" placeholder="Разделите запятыми" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Ссылка на постер: <span class="required">*</span></label>
-                    <input type="url" id="moviePoster" placeholder="https://example.com/poster.jpg" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Описание: <span class="required">*</span></label>
-                    <textarea id="movieDescription" rows="4" required
-                        placeholder="Краткое описание сюжета фильма..."></textarea>
-                </div>
-
-                <button type="submit" class="btn-primary">➕ Добавить фильм</button>
-            </form>
+        <!-- Advanced Search Interface -->
+        <section class="add-movie-section" id="search">
+            <div class="search-header">
+                <h2 class="section-title">
+                    <span class="title-icon">🔍</span>
+                    Поиск фильмов
+                </h2>
+                <p class="section-subtitle">Найдите любой фильм по названию</p>
+            </div>
         </section>
 
-        <!-- Секция отображения фильмов -->
-        <section class="movies-section">
-            <h2>Список фильмов <span id="movieCount" class="movie-count"></span></h2>
+        <!-- Movies Display Section -->
+        <section class="movies-section" id="trending">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-icon">🔥</span>
+                    Популярные фильмы
+                    <span id="movieCount" class="movie-count"></span>
+                </h2>
+                <div class="view-controls">
+                    <button class="view-btn active" data-view="grid" title="Сетка">
+                        <span>⊞</span>
+                    </button>
+                    <button class="view-btn" data-view="list" title="Список">
+                        <span>☰</span>
+                    </button>
+                </div>
+            </div>
+
             <div id="moviesGrid" class="movies-grid">
-                <!-- Здесь будут отображаться фильмы -->
+                <!-- Movies will be loaded here -->
             </div>
+
             <div id="noResults" class="no-results" style="display: none;">
-                <p>😔 Фильмы не найдены</p>
-                <p>Попробуйте изменить параметры фильтра</p>
+                <div class="no-results-icon">🎭</div>
+                <h3>Фильмы не найдены</h3>
+                <p>Попробуйте изменить параметры поиска</p>
             </div>
         </section>
     </main>
 
-    <footer>
-        <p>© 2026 Каталог фильмов | Курсовая работа</p>
+    <!-- Footer محدّث -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>🎬 КИНОПОРТАЛ</h3>
+                <p>Ваш проводник в мир кино</p>
+            </div>
+            <div class="footer-section">
+                <h4>О проекте</h4>
+                <p>Курсовая работа 2026</p>
+                <p>Веб-разработка</p>
+            </div>
+            <div class="footer-section">
+                <h4>Технологии</h4>
+                <p>HTML5 • CSS3 • JavaScript</p>
+                <p>Firebase • OMDb API</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 Кинопортал. Все права защищены.</p>
+        </div>
     </footer>
 
-    <!-- Firebase SDK (compat version) -->
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Загрузка...</p>
+    </div>
+
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
@@ -177,11 +160,67 @@
             measurementId: "G-M5KWXX1FCS"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-
         console.log('%c✅ Firebase подключён!', 'color: #4CAF50; font-size: 16px; font-weight: bold;');
+
+        // Helper functions
+        function scrollToSearch() {
+            document.querySelector('.add-movie-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function loadRandomMovie() {
+            const randomTitles = ["Inception", "Matrix", "Interstellar", "Joker", "Avatar"];
+            const random = randomTitles[Math.floor(Math.random() * randomTitles.length)];
+            document.getElementById('movieSearchInput').value = random;
+            handleSearch();
+        }
+
+        function loadTopRated() {
+            const topMovies = ["The Shawshank Redemption", "The Godfather", "The Dark Knight"];
+            showNotification('Загрузка топ фильмов...', 'info');
+            setTimeout(() => {
+                document.getElementById('movieSearchInput').value = topMovies[0];
+                handleSearch();
+            }, 500);
+        }
+
+        // View switcher
+        document.addEventListener('DOMContentLoaded', () => {
+            const viewBtns = document.querySelectorAll('.view-btn');
+            const grid = document.getElementById('moviesGrid');
+
+            viewBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    viewBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    if (btn.dataset.view === 'list') {
+                        grid.style.gridTemplateColumns = '1fr';
+                    } else {
+                        grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
+                    }
+                });
+            });
+
+            // Smooth scroll for nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const target = link.getAttribute('href');
+                    document.querySelector(target).scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+
+            // Update movie count animation
+            setInterval(() => {
+                const count = document.getElementById('movieCount');
+                if (count && count.textContent) {
+                    count.style.animation = 'pulse 0.5s ease';
+                    setTimeout(() => count.style.animation = '', 500);
+                }
+            }, 3000);
+        });
     </script>
 
     <script src="app.js"></script>
