@@ -29,9 +29,9 @@ const translations = {
         btnTop: 'Топ рейтинг',
         searchTitle: 'Поиск фильмов',
         searchSubtitle: 'Найдите любой фильм по названию',
-        searchPlaceholder: 'Введите название (Batman, Joker, Avengers...)',
+        searchPlaceholder: 'Введите название фильма...',
         searchButton: '🔍 Найти',
-        popularTitle: 'Популярные фильмы',
+        popularTitle: 'Мои фильмы',
         noResultsTitle: 'Фильмы не найдены',
         noResultsText: 'Попробуйте изменить параметры поиска',
         year: 'Год',
@@ -80,9 +80,9 @@ const translations = {
         btnTop: 'أعلى تقييم',
         searchTitle: 'بحث عن الأفلام',
         searchSubtitle: 'ابحث عن أي فيلم بالاسم',
-        searchPlaceholder: 'اكتب اسم الفيلم (Batman, Joker, Avengers...)',
+        searchPlaceholder: 'اكتب اسم الفيلم...',
         searchButton: '🔍 بحث',
-        popularTitle: 'الأفلام الشائعة',
+        popularTitle: 'أفلامي',
         noResultsTitle: 'لم نجد أفلام',
         noResultsText: 'جرب تغيير كلمات البحث',
         year: 'السنة',
@@ -239,7 +239,7 @@ function setupSearchInterface() {
 }
 
 // ============================================
-// فورم إضافة فيلم - تصميم Netflix
+// فورم إضافة فيلم - Netflix Style
 // ============================================
 function setupAddMovieForm() {
     const formSection = document.getElementById('addMovieSection');
@@ -252,38 +252,31 @@ function setupAddMovieForm() {
                 <h2 class="form-main-title">🎬 ${translations[currentLang].addMovieTitle}</h2>
                 <p class="form-main-subtitle">${translations[currentLang].addMovieSubtitle}</p>
             </div>
-
             <div class="form-cinema-wrap">
                 <div class="form-deco">
                     <div class="form-deco-circle">🎬</div>
                     <div class="form-deco-line"></div>
                 </div>
-
                 <div class="add-form-grid">
                     <div class="form-group">
                         <label class="form-label">🎬 ${translations[currentLang].fieldTitle}</label>
-                        <input type="text" id="newMovieTitle" class="form-input"
-                               placeholder="Брат / برات">
+                        <input type="text" id="newMovieTitle" class="form-input" placeholder="Брат / برات">
                     </div>
                     <div class="form-group">
                         <label class="form-label">📅 ${translations[currentLang].fieldYear}</label>
-                        <input type="number" id="newMovieYear" class="form-input"
-                               placeholder="1997" min="1900" max="2030">
+                        <input type="number" id="newMovieYear" class="form-input" placeholder="1997" min="1900" max="2030">
                     </div>
                     <div class="form-group">
                         <label class="form-label">🎭 ${translations[currentLang].fieldGenre}</label>
-                        <input type="text" id="newMovieGenre" class="form-input"
-                               placeholder="Drama, Action">
+                        <input type="text" id="newMovieGenre" class="form-input" placeholder="Drama, Action">
                     </div>
                     <div class="form-group">
                         <label class="form-label">⭐ ${translations[currentLang].fieldRating}</label>
-                        <input type="number" id="newMovieRating" class="form-input"
-                               placeholder="8.1" min="0" max="10" step="0.1">
+                        <input type="number" id="newMovieRating" class="form-input" placeholder="8.1" min="0" max="10" step="0.1">
                     </div>
                     <div class="form-group">
                         <label class="form-label">🎥 ${translations[currentLang].fieldDirector}</label>
-                        <input type="text" id="newMovieDirector" class="form-input"
-                               placeholder="Алексей Балабанов">
+                        <input type="text" id="newMovieDirector" class="form-input" placeholder="Алексей Балабанов">
                     </div>
                     <div class="form-group">
                         <label class="form-label">🌍 ${translations[currentLang].fieldCountry}</label>
@@ -302,11 +295,9 @@ function setupAddMovieForm() {
                     </div>
                     <div class="form-group form-group-full">
                         <label class="form-label">🖼 ${translations[currentLang].fieldPoster}</label>
-                        <input type="url" id="newMoviePoster" class="form-input"
-                               placeholder="https://...poster.jpg">
+                        <input type="url" id="newMoviePoster" class="form-input" placeholder="https://...poster.jpg">
                     </div>
                 </div>
-
                 <div class="form-buttons">
                     <button id="addMovieBtn" class="btn-add">
                         <span class="btn-icon">💾</span>
@@ -326,7 +317,8 @@ function setupAddMovieForm() {
 }
 
 // ============================================
-// إضافة فيلم لـ Firestore
+// إضافة فيلم لـ Firestore ✅
+// Collection: أفلام
 // ============================================
 async function addCustomMovie() {
     const title    = document.getElementById('newMovieTitle').value.trim();
@@ -348,7 +340,7 @@ async function addCustomMovie() {
     addBtn.innerHTML = '⏳ ...';
 
     try {
-        await db.collection('movies').add({
+        await db.collection('أفلام').add({
             title,
             year,
             genre:       genre    || 'N/A',
@@ -375,56 +367,33 @@ async function addCustomMovie() {
 }
 
 // ============================================
-// تحميل أفلام Firestore
-// ============================================
-async function loadCustomMovies() {
-    try {
-        const snapshot = await db.collection('movies')
-            .orderBy('timestamp', 'desc')
-            .get();
-
-        const customMovies = [];
-        snapshot.forEach(doc => {
-            customMovies.push({ id: doc.id, ...doc.data(), isCustom: true });
-        });
-
-        console.log(`%c📌 تم تحميل ${customMovies.length} فيلم من Firestore`, 'color: #FFA000;');
-        return customMovies;
-    } catch (error) {
-        console.error('Firestore load error:', error);
-        return [];
-    }
-}
-
-// ============================================
-// تحميل كل الأفلام (Firestore + API)
+// تحميل أفلام Firestore فقط ✅
+// Collection: أفلام
 // ============================================
 async function loadAllMovies() {
     showLoadingMessage(translations[currentLang].loading);
 
-    const popularTitles = [
-        "Inception", "The Dark Knight", "Interstellar", "The Avengers",
-        "Joker", "Titanic", "Avatar", "Gladiator", "The Matrix",
-        "Pulp Fiction", "Fight Club", "The Shawshank Redemption"
-    ];
+    try {
+        const snapshot = await db.collection('أفلام')
+            .orderBy('timestamp', 'desc')
+            .get();
 
-    const [customMovies, ...apiMoviesRaw] = await Promise.all([
-        loadCustomMovies(),
-        ...popularTitles.map(title => getMovieDetails(title))
-    ]);
+        const movies = [];
+        snapshot.forEach(doc => {
+            movies.push({ id: doc.id, ...doc.data(), isCustom: true });
+        });
 
-    const seenIds = new Set();
-    const apiMovies = apiMoviesRaw.filter(m => {
-        if (!m || seenIds.has(m.imdbID)) return false;
-        seenIds.add(m.imdbID);
-        return true;
-    });
+        console.log(`%c📌 تم تحميل ${movies.length} فيلم من Firestore`, 'color: #FFA000; font-size: 14px;');
+        renderMovies(movies);
 
-    renderMovies([...customMovies, ...apiMovies]);
+    } catch (error) {
+        console.error('Firestore load error:', error);
+        showErrorMessage(translations[currentLang].error);
+    }
 }
 
 // ============================================
-// البحث
+// البحث في Firestore فقط ✅
 // ============================================
 async function handleSearch() {
     const query = document.getElementById('movieSearchInput')?.value.trim();
@@ -436,68 +405,23 @@ async function handleSearch() {
     showLoadingMessage(translations[currentLang].searching);
 
     try {
-        const snapshot = await db.collection('movies').get();
-        const customResults = [];
+        const snapshot = await db.collection('أفلام').get();
+        const results = [];
+
         snapshot.forEach(doc => {
             const data = doc.data();
             if (data.title?.toLowerCase().includes(query.toLowerCase())) {
-                customResults.push({ id: doc.id, ...data, isCustom: true });
+                results.push({ id: doc.id, ...data, isCustom: true });
             }
         });
 
-        const response = await fetch(`${OMDB_API_URL}?apikey=${OMDB_API_KEY}&s=${encodeURIComponent(query)}`);
-        const data = await response.json();
-
-        let apiResults = [];
-        if (data.Response === "True") {
-            const seenTitles = new Set();
-            for (const movie of data.Search.slice(0, 15)) {
-                if (!seenTitles.has(movie.Title)) {
-                    seenTitles.add(movie.Title);
-                    const details = await getMovieDetails(movie.Title);
-                    if (details) apiResults.push(details);
-                    if (apiResults.length >= 10) break;
-                }
-            }
-        }
-
-        const allResults = [...customResults, ...apiResults];
-        allResults.length > 0
-            ? renderMovies(allResults)
+        results.length > 0
+            ? renderMovies(results)
             : showErrorMessage(translations[currentLang].noResults);
 
     } catch (error) {
         showErrorMessage(translations[currentLang].error);
     }
-}
-
-// ============================================
-// TMDb + OMDb
-// ============================================
-async function getTMDbPoster(movieTitle) {
-    try {
-        const res = await fetch(
-            `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(movieTitle)}&language=en-US`
-        );
-        const data = await res.json();
-        if (data.results?.length > 0 && data.results[0].poster_path) {
-            return `${TMDB_IMAGE_URL}${data.results[0].poster_path}`;
-        }
-        return null;
-    } catch { return null; }
-}
-
-async function getMovieDetails(title) {
-    try {
-        const res = await fetch(`${OMDB_API_URL}?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`);
-        const data = await res.json();
-        if (data.Response === "True") {
-            const tmdbPoster = await getTMDbPoster(title);
-            if (tmdbPoster) data.Poster = tmdbPoster;
-            return data;
-        }
-        return null;
-    } catch { return null; }
 }
 
 // ============================================
@@ -524,15 +448,15 @@ function renderMovies(movies) {
 // ============================================
 function createMovieCard(movie) {
     const card = document.createElement('div');
-    card.className = movie.isCustom ? 'movie-card custom-card' : 'movie-card';
+    card.className = 'movie-card custom-card';
 
-    const title  = movie.isCustom ? movie.title  : movie.Title;
-    const year   = movie.isCustom ? movie.year   : movie.Year;
-    const genre  = movie.isCustom ? movie.genre  : movie.Genre;
-    const plot   = movie.isCustom ? (movie.description || movie.plot) : movie.Plot;
-    const rating = movie.isCustom ? movie.rating : movie.imdbRating;
-    const poster = movie.isCustom ? movie.poster : movie.Poster;
-    const isRu   = movie.isCustom && movie.country === 'RU';
+    const title  = movie.title;
+    const year   = movie.year;
+    const genre  = movie.genre;
+    const plot   = movie.description || movie.plot || '—';
+    const rating = movie.rating;
+    const poster = movie.poster;
+    const isRu   = movie.country === 'RU';
 
     const hasPoster  = poster && poster !== 'N/A' && poster !== '';
     const gradientBg = currentTheme === 'dark'
@@ -540,11 +464,9 @@ function createMovieCard(movie) {
         : 'linear-gradient(135deg, #f0f0f0, #e0e0e0)';
 
     card.innerHTML = `
-        ${movie.isCustom ? `
-            <div class="custom-badge">
-                ${isRu ? '🇷🇺' : '📌'} ${translations[currentLang].customBadge}
-            </div>
-        ` : ''}
+        <div class="custom-badge">
+            ${isRu ? '🇷🇺' : '📌'} ${translations[currentLang].customBadge}
+        </div>
 
         <div style="position:relative; height:450px; overflow:hidden;
                     background:${hasPoster ? '#000' : gradientBg};">
@@ -589,9 +511,7 @@ function createMovieCard(movie) {
             </div>
             <p style="color:var(--text-secondary); font-size:0.9rem; line-height:1.6;
                       margin:15px 0; min-height:55px;">
-                ${plot && plot !== 'N/A'
-                    ? (plot.length > 120 ? plot.substring(0, 120) + '...' : plot)
-                    : '—'}
+                ${plot !== 'N/A' ? (plot.length > 120 ? plot.substring(0, 120) + '...' : plot) : '—'}
             </p>
             <div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap;">
                 <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(title + ' trailer')}"
@@ -601,20 +521,18 @@ function createMovieCard(movie) {
                           font-weight:bold; transition:0.3s; min-width:120px;">
                     ${translations[currentLang].watchTrailer}
                 </a>
-                ${movie.isCustom ? `
-                    <button onclick="openEditModal('${movie.id}')"
-                            style="background:rgba(255,165,0,0.15); border:1.5px solid orange;
-                                   color:orange; padding:12px 16px; border-radius:8px;
-                                   cursor:pointer; font-weight:bold; transition:0.3s; font-size:1rem;">
-                        ✏️
-                    </button>
-                    <button onclick="deleteCustomMovie('${movie.id}')"
-                            style="background:rgba(229,9,20,0.15); border:1.5px solid var(--primary-color);
-                                   color:var(--primary-color); padding:12px 16px; border-radius:8px;
-                                   cursor:pointer; font-weight:bold; transition:0.3s; font-size:1rem;">
-                        🗑
-                    </button>
-                ` : ''}
+                <button onclick="openEditModal('${movie.id}')"
+                        style="background:rgba(255,165,0,0.15); border:1.5px solid orange;
+                               color:orange; padding:12px 16px; border-radius:8px;
+                               cursor:pointer; font-weight:bold; transition:0.3s; font-size:1rem;">
+                    ✏️
+                </button>
+                <button onclick="deleteCustomMovie('${movie.id}')"
+                        style="background:rgba(229,9,20,0.15); border:1.5px solid var(--primary-color);
+                               color:var(--primary-color); padding:12px 16px; border-radius:8px;
+                               cursor:pointer; font-weight:bold; transition:0.3s; font-size:1rem;">
+                    🗑
+                </button>
             </div>
         </div>
     `;
@@ -639,7 +557,6 @@ function createMovieCard(movie) {
 // Modal التعديل ✅
 // ============================================
 function openEditModal(docId) {
-    // لو في modal قديم امسحه
     const oldModal = document.getElementById('editModal');
     if (oldModal) oldModal.remove();
 
@@ -655,9 +572,9 @@ function openEditModal(docId) {
     modal.innerHTML = `
         <div style="background:#141414; border:1px solid rgba(229,9,20,0.4);
                     border-radius:20px; padding:40px; width:100%; max-width:550px;
-                    box-shadow:0 25px 60px rgba(0,0,0,0.8); position:relative;">
+                    box-shadow:0 25px 60px rgba(0,0,0,0.8); position:relative;
+                    max-height:90vh; overflow-y:auto;">
 
-            <!-- زرار الإغلاق -->
             <button onclick="document.getElementById('editModal').remove()"
                     style="position:absolute; top:15px; right:20px; background:rgba(229,9,20,0.2);
                            border:1px solid rgba(229,9,20,0.4); color:white; width:35px; height:35px;
@@ -744,7 +661,8 @@ function openEditModal(docId) {
             <div style="display:flex; gap:12px; margin-top:25px; justify-content:center;">
                 <button id="saveEditBtn"
                         style="display:flex; align-items:center; gap:8px;
-                               padding:14px 35px; background:linear-gradient(135deg,#e50914,#b20710);
+                               padding:14px 35px;
+                               background:linear-gradient(135deg,#e50914,#b20710);
                                color:white; border:none; border-radius:50px; font-size:1rem;
                                font-weight:bold; cursor:pointer; transition:0.3s;
                                box-shadow:0 8px 25px rgba(229,9,20,0.4);">
@@ -754,7 +672,7 @@ function openEditModal(docId) {
                         style="display:flex; align-items:center; gap:8px;
                                padding:14px 25px; background:rgba(255,255,255,0.05);
                                color:#888; border:1.5px solid rgba(255,255,255,0.1);
-                               border-radius:50px; font-size:1rem; cursor:pointer; transition:0.3s;">
+                               border-radius:50px; font-size:1rem; cursor:pointer;">
                     ✕ إلغاء
                 </button>
             </div>
@@ -763,18 +681,18 @@ function openEditModal(docId) {
 
     document.body.appendChild(modal);
 
-    // جلب بيانات الفيلم من Firestore وملء الفورم
-    db.collection('movies').doc(docId).get().then(doc => {
+    // ملء بيانات الفيلم
+    db.collection('أفلام').doc(docId).get().then(doc => {
         if (doc.exists) {
             const d = doc.data();
-            document.getElementById('editTitle').value    = d.title    || '';
-            document.getElementById('editYear').value     = d.year     || '';
-            document.getElementById('editGenre').value    = d.genre    || '';
-            document.getElementById('editRating').value   = d.rating   || '';
-            document.getElementById('editDirector').value = d.director || '';
-            document.getElementById('editCountry').value  = d.country  || 'OTHER';
+            document.getElementById('editTitle').value    = d.title       || '';
+            document.getElementById('editYear').value     = d.year        || '';
+            document.getElementById('editGenre').value    = d.genre       || '';
+            document.getElementById('editRating').value   = d.rating      || '';
+            document.getElementById('editDirector').value = d.director    || '';
+            document.getElementById('editCountry').value  = d.country     || 'OTHER';
             document.getElementById('editDesc').value     = d.description || d.plot || '';
-            document.getElementById('editPoster').value   = d.poster   || '';
+            document.getElementById('editPoster').value   = d.poster      || '';
         }
     });
 
@@ -799,8 +717,9 @@ function openEditModal(docId) {
         saveBtn.textContent = '⏳ ...';
 
         try {
-            await db.collection('movies').doc(docId).update({
-                title, year,
+            await db.collection('أفلام').doc(docId).update({
+                title,
+                year,
                 genre:       genre    || 'N/A',
                 description: desc     || 'N/A',
                 rating:      rating   || 'N/A',
@@ -821,19 +740,19 @@ function openEditModal(docId) {
         }
     });
 
-    // إغلاق بالضغط خارج الـ modal
+    // إغلاق بالضغط برا الـ Modal
     modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.remove();
     });
 }
 
 // ============================================
-// حذف فيلم
+// حذف فيلم ✅
 // ============================================
 async function deleteCustomMovie(docId) {
     if (!confirm('🗑 تأكيد الحذف؟')) return;
     try {
-        await db.collection('movies').doc(docId).delete();
+        await db.collection('أفلام').doc(docId).delete();
         showNotification(translations[currentLang].deleteSuccess, 'success');
         loadAllMovies();
     } catch (error) {
@@ -862,23 +781,15 @@ function scrollToSearch() {
 }
 
 function loadRandomMovie() {
-    const titles = ["Inception","Matrix","Interstellar","Joker","Avatar","Titanic","Gladiator"];
-    const input = document.getElementById('movieSearchInput');
-    if (input) {
-        input.value = titles[Math.floor(Math.random() * titles.length)];
-        handleSearch();
-        scrollToSearch();
-    }
+    showNotification('🎲 جاري تحميل فيلم عشوائي...', 'success');
+    loadAllMovies();
+    scrollToSearch();
 }
 
 function loadTopRated() {
-    const tops = ["The Shawshank Redemption","The Godfather","The Dark Knight","Pulp Fiction"];
-    const input = document.getElementById('movieSearchInput');
-    if (input) {
-        input.value = tops[Math.floor(Math.random() * tops.length)];
-        handleSearch();
-        scrollToSearch();
-    }
+    showNotification('🏆 جاري تحميل الأفلام...', 'success');
+    loadAllMovies();
+    scrollToSearch();
 }
 
 function changeView(viewType) {
