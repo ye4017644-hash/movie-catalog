@@ -7,7 +7,6 @@ const TMDB_API_KEY = '8265bd1679663a7ea12ac168da84d2e8';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_URL = 'https://image.tmdb.org/t/p/w500';
 
-// إخفاء رسائل Tracking Prevention
 const originalWarn = console.warn;
 console.warn = function (...args) {
     if (args[0]?.includes?.('Tracking Prevention')) return;
@@ -43,7 +42,7 @@ const translations = {
         noResults: 'Фильмы не найдены',
         error: 'Ошибка подключения',
         enterTitle: 'Введите название фильма!',
-        addMovieTitle: '➕ Добавить свой фильм',
+        addMovieTitle: 'Добавить свой фильм',
         addMovieSubtitle: 'Добавьте фильм вручную в базу данных',
         fieldTitle: 'Название фильма *',
         fieldYear: 'Год выпуска *',
@@ -53,13 +52,15 @@ const translations = {
         fieldCountry: 'Страна',
         fieldDirector: 'Режиссёр',
         fieldPoster: 'Ссылка на постер (URL)',
-        btnAdd: '💾 Добавить в базу данных',
-        btnClear: '🗑 Очистить',
+        btnAdd: 'Добавить в базу данных',
+        btnClear: 'Очистить',
         addSuccess: '✅ Фильм успешно добавлен!',
         addError: '❌ Ошибка при добавлении!',
         fillRequired: '⚠️ Заполните обязательные поля!',
-        customBadge: '📌 Мой фильм',
+        customBadge: 'Мой фильм',
         deleteSuccess: '🗑 Фильм удалён',
+        editSuccess: '✅ Фильм обновлён!',
+        editError: '❌ Ошибка при редактировании!',
         footerTagline: 'Ваш проводник в мир кино',
         footerAbout: 'О проекте',
         footerProject: 'Курсовая работа 2026',
@@ -92,7 +93,7 @@ const translations = {
         noResults: 'لم نجد نتائج',
         error: 'خطأ في الاتصال',
         enterTitle: 'من فضلك اكتب اسم فيلم!',
-        addMovieTitle: '➕ أضف فيلمك الخاص',
+        addMovieTitle: 'أضف فيلمك الخاص',
         addMovieSubtitle: 'أضف أي فيلم يدويًا لقاعدة البيانات',
         fieldTitle: 'اسم الفيلم *',
         fieldYear: 'سنة الإنتاج *',
@@ -102,13 +103,15 @@ const translations = {
         fieldCountry: 'الدولة',
         fieldDirector: 'المخرج',
         fieldPoster: 'رابط البوستر (URL)',
-        btnAdd: '💾 أضف لقاعدة البيانات',
-        btnClear: '🗑 مسح',
+        btnAdd: 'أضف لقاعدة البيانات',
+        btnClear: 'مسح',
         addSuccess: '✅ تم إضافة الفيلم بنجاح!',
         addError: '❌ خطأ أثناء الإضافة!',
         fillRequired: '⚠️ اكتب الحقول الإلزامية!',
-        customBadge: '📌 فيلمي',
+        customBadge: 'فيلمي',
         deleteSuccess: '🗑 تم حذف الفيلم',
+        editSuccess: '✅ تم تعديل الفيلم!',
+        editError: '❌ خطأ في التعديل!',
         footerTagline: 'دليلك لعالم السينما',
         footerAbout: 'عن المشروع',
         footerProject: 'مشروع تخرج 2026',
@@ -206,18 +209,18 @@ function setupSearchInterface() {
     if (searchContent) {
         const searchBox = document.createElement('div');
         searchBox.className = 'search-box-container';
-        searchBox.style.cssText = 'display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 30px;';
+        searchBox.style.cssText = 'display:flex; gap:15px; justify-content:center; flex-wrap:wrap; margin-top:30px;';
         searchBox.innerHTML = `
             <input type="text" id="movieSearchInput"
                    placeholder="${translations[currentLang].searchPlaceholder}"
-                   style="flex: 1; min-width: 280px; max-width: 500px; padding: 18px 25px;
-                          border: 2px solid var(--primary-color); background: var(--input-bg);
-                          color: var(--text-color); border-radius: 50px; font-size: 1.15rem;
-                          outline: none; transition: 0.3s;">
+                   style="flex:1; min-width:280px; max-width:500px; padding:18px 25px;
+                          border:2px solid var(--primary-color); background:var(--input-bg);
+                          color:var(--text-color); border-radius:50px; font-size:1.15rem;
+                          outline:none; transition:0.3s;">
             <button id="movieSearchBtn"
-                    style="padding: 18px 40px; background: var(--primary-color); color: white;
-                           border: none; border-radius: 50px; cursor: pointer; font-weight: bold;
-                           font-size: 1.15rem; transition: 0.3s; box-shadow: 0 4px 15px var(--shadow-color);">
+                    style="padding:18px 40px; background:var(--primary-color); color:white;
+                           border:none; border-radius:50px; cursor:pointer; font-weight:bold;
+                           font-size:1.15rem; transition:0.3s; box-shadow:0 4px 15px var(--shadow-color);">
                 ${translations[currentLang].searchButton}
             </button>
         `;
@@ -236,7 +239,7 @@ function setupSearchInterface() {
 }
 
 // ============================================
-// فورم إضافة فيلم يدوي
+// فورم إضافة فيلم - تصميم Netflix
 // ============================================
 function setupAddMovieForm() {
     const formSection = document.getElementById('addMovieSection');
@@ -245,57 +248,75 @@ function setupAddMovieForm() {
     formSection.innerHTML = `
         <div class="add-form-container">
             <div class="add-form-header">
-                <h2 class="section-title">
-                    <span class="title-icon">➕</span>
-                    ${translations[currentLang].addMovieTitle}
-                </h2>
-                <p class="section-subtitle">${translations[currentLang].addMovieSubtitle}</p>
+                <div class="form-header-badge">FIRESTORE DATABASE</div>
+                <h2 class="form-main-title">🎬 ${translations[currentLang].addMovieTitle}</h2>
+                <p class="form-main-subtitle">${translations[currentLang].addMovieSubtitle}</p>
             </div>
-            <div class="add-form-grid">
-                <div class="form-group">
-                    <label class="form-label">🎬 ${translations[currentLang].fieldTitle}</label>
-                    <input type="text" id="newMovieTitle" class="form-input" placeholder="Брат / برات">
+
+            <div class="form-cinema-wrap">
+                <div class="form-deco">
+                    <div class="form-deco-circle">🎬</div>
+                    <div class="form-deco-line"></div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">📅 ${translations[currentLang].fieldYear}</label>
-                    <input type="number" id="newMovieYear" class="form-input" placeholder="1997" min="1900" max="2030">
+
+                <div class="add-form-grid">
+                    <div class="form-group">
+                        <label class="form-label">🎬 ${translations[currentLang].fieldTitle}</label>
+                        <input type="text" id="newMovieTitle" class="form-input"
+                               placeholder="Брат / برات">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📅 ${translations[currentLang].fieldYear}</label>
+                        <input type="number" id="newMovieYear" class="form-input"
+                               placeholder="1997" min="1900" max="2030">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🎭 ${translations[currentLang].fieldGenre}</label>
+                        <input type="text" id="newMovieGenre" class="form-input"
+                               placeholder="Drama, Action">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">⭐ ${translations[currentLang].fieldRating}</label>
+                        <input type="number" id="newMovieRating" class="form-input"
+                               placeholder="8.1" min="0" max="10" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🎥 ${translations[currentLang].fieldDirector}</label>
+                        <input type="text" id="newMovieDirector" class="form-input"
+                               placeholder="Алексей Балабанов">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🌍 ${translations[currentLang].fieldCountry}</label>
+                        <select id="newMovieCountry" class="form-input">
+                            <option value="OTHER">🌐 Other</option>
+                            <option value="RU">🇷🇺 Россия</option>
+                            <option value="EG">🇪🇬 مصر</option>
+                            <option value="US">🇺🇸 USA</option>
+                            <option value="AR">🇸🇦 العرب</option>
+                        </select>
+                    </div>
+                    <div class="form-group form-group-full">
+                        <label class="form-label">📖 ${translations[currentLang].fieldDesc}</label>
+                        <textarea id="newMovieDesc" class="form-input form-textarea"
+                                  placeholder="اكتب وصف الفيلم..."></textarea>
+                    </div>
+                    <div class="form-group form-group-full">
+                        <label class="form-label">🖼 ${translations[currentLang].fieldPoster}</label>
+                        <input type="url" id="newMoviePoster" class="form-input"
+                               placeholder="https://...poster.jpg">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">🎭 ${translations[currentLang].fieldGenre}</label>
-                    <input type="text" id="newMovieGenre" class="form-input" placeholder="Драма / دراما">
+
+                <div class="form-buttons">
+                    <button id="addMovieBtn" class="btn-add">
+                        <span class="btn-icon">💾</span>
+                        ${translations[currentLang].btnAdd}
+                    </button>
+                    <button id="clearFormBtn" class="btn-clear">
+                        <span class="btn-icon">🗑</span>
+                        ${translations[currentLang].btnClear}
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">⭐ ${translations[currentLang].fieldRating}</label>
-                    <input type="number" id="newMovieRating" class="form-input" placeholder="8.1" min="0" max="10" step="0.1">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">🎥 ${translations[currentLang].fieldDirector}</label>
-                    <input type="text" id="newMovieDirector" class="form-input" placeholder="Алексей Балабанов">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">🌍 ${translations[currentLang].fieldCountry}</label>
-                    <select id="newMovieCountry" class="form-input">
-                        <option value="OTHER">🌐 Other</option>
-                        <option value="RU">🇷🇺 Россия</option>
-                        <option value="EG">🇪🇬 مصر</option>
-                        <option value="US">🇺🇸 USA</option>
-                        <option value="AR">🇸🇦 العرب</option>
-                    </select>
-                </div>
-                <div class="form-group form-group-full">
-                    <label class="form-label">📖 ${translations[currentLang].fieldDesc}</label>
-                    <textarea id="newMovieDesc" class="form-input form-textarea"
-                              placeholder="اكتب وصف الفيلم هنا..."></textarea>
-                </div>
-                <div class="form-group form-group-full">
-                    <label class="form-label">🖼 ${translations[currentLang].fieldPoster}</label>
-                    <input type="url" id="newMoviePoster" class="form-input"
-                           placeholder="https://image.url/poster.jpg">
-                </div>
-            </div>
-            <div class="form-buttons">
-                <button id="addMovieBtn" class="btn-add">${translations[currentLang].btnAdd}</button>
-                <button id="clearFormBtn" class="btn-clear">${translations[currentLang].btnClear}</button>
             </div>
         </div>
     `;
@@ -305,7 +326,7 @@ function setupAddMovieForm() {
 }
 
 // ============================================
-// إضافة فيلم لـ Firestore ✅ (Collection: movies)
+// إضافة فيلم لـ Firestore
 // ============================================
 async function addCustomMovie() {
     const title    = document.getElementById('newMovieTitle').value.trim();
@@ -324,7 +345,7 @@ async function addCustomMovie() {
 
     const addBtn = document.getElementById('addMovieBtn');
     addBtn.disabled = true;
-    addBtn.textContent = '⏳ ...';
+    addBtn.innerHTML = '⏳ ...';
 
     try {
         await db.collection('movies').add({
@@ -343,19 +364,18 @@ async function addCustomMovie() {
         showNotification(translations[currentLang].addSuccess, 'success');
         clearForm();
         loadAllMovies();
-        console.log('%c✅ فيلم جديد اتضاف لـ Firestore!', 'color: #4CAF50; font-size: 14px;');
 
     } catch (error) {
         console.error('Firestore Error:', error);
         showNotification(translations[currentLang].addError, 'error');
     } finally {
         addBtn.disabled = false;
-        addBtn.textContent = translations[currentLang].btnAdd;
+        addBtn.innerHTML = `<span class="btn-icon">💾</span> ${translations[currentLang].btnAdd}`;
     }
 }
 
 // ============================================
-// تحميل أفلام من Firestore ✅ (Collection: movies)
+// تحميل أفلام Firestore
 // ============================================
 async function loadCustomMovies() {
     try {
@@ -377,7 +397,7 @@ async function loadCustomMovies() {
 }
 
 // ============================================
-// تحميل كل الأفلام (Firestore + API) ✅
+// تحميل كل الأفلام (Firestore + API)
 // ============================================
 async function loadAllMovies() {
     showLoadingMessage(translations[currentLang].loading);
@@ -400,12 +420,11 @@ async function loadAllMovies() {
         return true;
     });
 
-    // أفلام Firestore أولاً ثم API
     renderMovies([...customMovies, ...apiMovies]);
 }
 
 // ============================================
-// البحث (Firestore + OMDb)
+// البحث
 // ============================================
 async function handleSearch() {
     const query = document.getElementById('movieSearchInput')?.value.trim();
@@ -417,7 +436,6 @@ async function handleSearch() {
     showLoadingMessage(translations[currentLang].searching);
 
     try {
-        // بحث في Firestore
         const snapshot = await db.collection('movies').get();
         const customResults = [];
         snapshot.forEach(doc => {
@@ -427,7 +445,6 @@ async function handleSearch() {
             }
         });
 
-        // بحث في OMDb
         const response = await fetch(`${OMDB_API_URL}?apikey=${OMDB_API_KEY}&s=${encodeURIComponent(query)}`);
         const data = await response.json();
 
@@ -509,16 +526,15 @@ function createMovieCard(movie) {
     const card = document.createElement('div');
     card.className = movie.isCustom ? 'movie-card custom-card' : 'movie-card';
 
-    // توحيد الحقول بين Firestore وAPI
-    const title   = movie.isCustom ? movie.title  : movie.Title;
-    const year    = movie.isCustom ? movie.year   : movie.Year;
-    const genre   = movie.isCustom ? movie.genre  : movie.Genre;
-    const plot    = movie.isCustom ? (movie.description || movie.plot) : movie.Plot;
-    const rating  = movie.isCustom ? movie.rating : movie.imdbRating;
-    const poster  = movie.isCustom ? movie.poster : movie.Poster;
-    const isRu    = movie.isCustom && movie.country === 'RU';
+    const title  = movie.isCustom ? movie.title  : movie.Title;
+    const year   = movie.isCustom ? movie.year   : movie.Year;
+    const genre  = movie.isCustom ? movie.genre  : movie.Genre;
+    const plot   = movie.isCustom ? (movie.description || movie.plot) : movie.Plot;
+    const rating = movie.isCustom ? movie.rating : movie.imdbRating;
+    const poster = movie.isCustom ? movie.poster : movie.Poster;
+    const isRu   = movie.isCustom && movie.country === 'RU';
 
-    const hasPoster = poster && poster !== 'N/A' && poster !== '';
+    const hasPoster  = poster && poster !== 'N/A' && poster !== '';
     const gradientBg = currentTheme === 'dark'
         ? 'linear-gradient(135deg, #1a1a2e, #16213e)'
         : 'linear-gradient(135deg, #f0f0f0, #e0e0e0)';
@@ -530,11 +546,11 @@ function createMovieCard(movie) {
             </div>
         ` : ''}
 
-        <div style="position: relative; height: 450px; overflow: hidden;
-                    background: ${hasPoster ? '#000' : gradientBg};">
+        <div style="position:relative; height:450px; overflow:hidden;
+                    background:${hasPoster ? '#000' : gradientBg};">
             ${hasPoster ? `
                 <img src="${poster}" alt="${title}"
-                     style="width: 100%; height: 100%; object-fit: cover; transition: 0.4s;"
+                     style="width:100%; height:100%; object-fit:cover; transition:0.4s;"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <div style="display:none; position:absolute; top:0; left:0; right:0; bottom:0;
                             background:${gradientBg};
@@ -586,9 +602,15 @@ function createMovieCard(movie) {
                     ${translations[currentLang].watchTrailer}
                 </a>
                 ${movie.isCustom ? `
+                    <button onclick="openEditModal('${movie.id}')"
+                            style="background:rgba(255,165,0,0.15); border:1.5px solid orange;
+                                   color:orange; padding:12px 16px; border-radius:8px;
+                                   cursor:pointer; font-weight:bold; transition:0.3s; font-size:1rem;">
+                        ✏️
+                    </button>
                     <button onclick="deleteCustomMovie('${movie.id}')"
-                            style="background:rgba(229,9,20,0.15); border:1px solid var(--primary-color);
-                                   color:var(--primary-color); padding:12px 18px; border-radius:8px;
+                            style="background:rgba(229,9,20,0.15); border:1.5px solid var(--primary-color);
+                                   color:var(--primary-color); padding:12px 16px; border-radius:8px;
                                    cursor:pointer; font-weight:bold; transition:0.3s; font-size:1rem;">
                         🗑
                     </button>
@@ -614,7 +636,199 @@ function createMovieCard(movie) {
 }
 
 // ============================================
-// حذف فيلم من Firestore ✅
+// Modal التعديل ✅
+// ============================================
+function openEditModal(docId) {
+    // لو في modal قديم امسحه
+    const oldModal = document.getElementById('editModal');
+    if (oldModal) oldModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'editModal';
+    modal.style.cssText = `
+        position:fixed; top:0; left:0; right:0; bottom:0; z-index:99999;
+        background:rgba(0,0,0,0.85); display:flex;
+        align-items:center; justify-content:center; padding:20px;
+        backdrop-filter:blur(5px);
+    `;
+
+    modal.innerHTML = `
+        <div style="background:#141414; border:1px solid rgba(229,9,20,0.4);
+                    border-radius:20px; padding:40px; width:100%; max-width:550px;
+                    box-shadow:0 25px 60px rgba(0,0,0,0.8); position:relative;">
+
+            <!-- زرار الإغلاق -->
+            <button onclick="document.getElementById('editModal').remove()"
+                    style="position:absolute; top:15px; right:20px; background:rgba(229,9,20,0.2);
+                           border:1px solid rgba(229,9,20,0.4); color:white; width:35px; height:35px;
+                           border-radius:50%; cursor:pointer; font-size:1.1rem;">✕</button>
+
+            <div style="text-align:center; margin-bottom:30px;">
+                <div style="display:inline-block; background:rgba(229,9,20,0.15);
+                            border:1px solid rgba(229,9,20,0.4); color:#e50914;
+                            padding:5px 18px; border-radius:30px; font-size:0.75rem;
+                            font-weight:bold; letter-spacing:2px; margin-bottom:12px;">
+                    EDIT MOVIE
+                </div>
+                <h3 style="color:white; font-size:1.5rem; margin:0;">✏️ تعديل الفيلم</h3>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                <div>
+                    <label style="color:#aaa; font-size:0.8rem; font-weight:700;
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">
+                        🎬 الاسم *
+                    </label>
+                    <input id="editTitle" class="form-input" type="text" placeholder="اسم الفيلم">
+                </div>
+                <div>
+                    <label style="color:#aaa; font-size:0.8rem; font-weight:700;
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">
+                        📅 السنة *
+                    </label>
+                    <input id="editYear" class="form-input" type="number" placeholder="1997">
+                </div>
+                <div>
+                    <label style="color:#aaa; font-size:0.8rem; font-weight:700;
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">
+                        🎭 الجانر
+                    </label>
+                    <input id="editGenre" class="form-input" type="text" placeholder="Drama, Action">
+                </div>
+                <div>
+                    <label style="color:#aaa; font-size:0.8rem; font-weight:700;
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">
+                        ⭐ الرايتنج
+                    </label>
+                    <input id="editRating" class="form-input" type="number"
+                           placeholder="8.1" min="0" max="10" step="0.1">
+                </div>
+                <div>
+                    <label style="color:#aaa; font-size:0.8rem; font-weight:700;
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">
+                        🎥 المخرج
+                    </label>
+                    <input id="editDirector" class="form-input" type="text" placeholder="المخرج">
+                </div>
+                <div>
+                    <label style="color:#aaa; font-size:0.8rem; font-weight:700;
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">
+                        🌍 البلد
+                    </label>
+                    <select id="editCountry" class="form-input">
+                        <option value="OTHER">🌐 Other</option>
+                        <option value="RU">🇷🇺 Россия</option>
+                        <option value="EG">🇪🇬 مصر</option>
+                        <option value="US">🇺🇸 USA</option>
+                        <option value="AR">🇸🇦 العرب</option>
+                    </select>
+                </div>
+                <div style="grid-column:1/-1;">
+                    <label style="color:#aaa; font-size:0.8rem; font-weight:700;
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">
+                        📖 الوصف
+                    </label>
+                    <textarea id="editDesc" class="form-input form-textarea"
+                              placeholder="وصف الفيلم..."></textarea>
+                </div>
+                <div style="grid-column:1/-1;">
+                    <label style="color:#aaa; font-size:0.8rem; font-weight:700;
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">
+                        🖼 رابط البوستر
+                    </label>
+                    <input id="editPoster" class="form-input" type="url"
+                           placeholder="https://...poster.jpg">
+                </div>
+            </div>
+
+            <div style="display:flex; gap:12px; margin-top:25px; justify-content:center;">
+                <button id="saveEditBtn"
+                        style="display:flex; align-items:center; gap:8px;
+                               padding:14px 35px; background:linear-gradient(135deg,#e50914,#b20710);
+                               color:white; border:none; border-radius:50px; font-size:1rem;
+                               font-weight:bold; cursor:pointer; transition:0.3s;
+                               box-shadow:0 8px 25px rgba(229,9,20,0.4);">
+                    💾 حفظ التعديلات
+                </button>
+                <button onclick="document.getElementById('editModal').remove()"
+                        style="display:flex; align-items:center; gap:8px;
+                               padding:14px 25px; background:rgba(255,255,255,0.05);
+                               color:#888; border:1.5px solid rgba(255,255,255,0.1);
+                               border-radius:50px; font-size:1rem; cursor:pointer; transition:0.3s;">
+                    ✕ إلغاء
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // جلب بيانات الفيلم من Firestore وملء الفورم
+    db.collection('movies').doc(docId).get().then(doc => {
+        if (doc.exists) {
+            const d = doc.data();
+            document.getElementById('editTitle').value    = d.title    || '';
+            document.getElementById('editYear').value     = d.year     || '';
+            document.getElementById('editGenre').value    = d.genre    || '';
+            document.getElementById('editRating').value   = d.rating   || '';
+            document.getElementById('editDirector').value = d.director || '';
+            document.getElementById('editCountry').value  = d.country  || 'OTHER';
+            document.getElementById('editDesc').value     = d.description || d.plot || '';
+            document.getElementById('editPoster').value   = d.poster   || '';
+        }
+    });
+
+    // حفظ التعديلات
+    document.getElementById('saveEditBtn').addEventListener('click', async () => {
+        const title    = document.getElementById('editTitle').value.trim();
+        const year     = document.getElementById('editYear').value.trim();
+        const genre    = document.getElementById('editGenre').value.trim();
+        const rating   = document.getElementById('editRating').value.trim();
+        const director = document.getElementById('editDirector').value.trim();
+        const country  = document.getElementById('editCountry').value;
+        const desc     = document.getElementById('editDesc').value.trim();
+        const poster   = document.getElementById('editPoster').value.trim();
+
+        if (!title || !year) {
+            showNotification(translations[currentLang].fillRequired, 'warning');
+            return;
+        }
+
+        const saveBtn = document.getElementById('saveEditBtn');
+        saveBtn.disabled = true;
+        saveBtn.textContent = '⏳ ...';
+
+        try {
+            await db.collection('movies').doc(docId).update({
+                title, year,
+                genre:       genre    || 'N/A',
+                description: desc     || 'N/A',
+                rating:      rating   || 'N/A',
+                director:    director || 'N/A',
+                country:     country  || 'OTHER',
+                poster:      poster   || ''
+            });
+
+            showNotification(translations[currentLang].editSuccess, 'success');
+            document.getElementById('editModal').remove();
+            loadAllMovies();
+
+        } catch (error) {
+            console.error('Edit error:', error);
+            showNotification(translations[currentLang].editError, 'error');
+            saveBtn.disabled = false;
+            saveBtn.textContent = '💾 حفظ التعديلات';
+        }
+    });
+
+    // إغلاق بالضغط خارج الـ modal
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+}
+
+// ============================================
+// حذف فيلم
 // ============================================
 async function deleteCustomMovie(docId) {
     if (!confirm('🗑 تأكيد الحذف؟')) return;
@@ -628,7 +842,7 @@ async function deleteCustomMovie(docId) {
 }
 
 // ============================================
-// مساعد: مسح الفورم
+// مسح الفورم
 // ============================================
 function clearForm() {
     ['newMovieTitle','newMovieYear','newMovieGenre','newMovieDesc',
@@ -697,7 +911,7 @@ function showNotification(msg, type) {
     const colors = { success: '#4CAF50', warning: '#ff9800', error: '#e50914' };
     const notif = document.createElement('div');
     notif.style.cssText = `
-        position:fixed; top:30px; ${currentLang === 'ar' ? 'left' : 'right'}:30px; z-index:10000;
+        position:fixed; top:30px; ${currentLang === 'ar' ? 'left' : 'right'}:30px; z-index:100000;
         background:${colors[type] || colors.error};
         color:white; padding:20px 30px; border-radius:10px;
         box-shadow:0 8px 30px rgba(0,0,0,0.5);
