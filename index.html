@@ -23,8 +23,8 @@
             <div class="nav-controls">
                 <!-- Language Switcher -->
                 <div class="language-switcher">
-                    <button class="lang-btn active" data-lang="ru" title="Русский">🇷🇺</button>
-                    <button class="lang-btn" data-lang="ar" title="العربية">🇸🇦</button>
+                    <button class="lang-btn active" data-lang="ru" title="Русский">RU</button>
+                    <button class="lang-btn" data-lang="ar" title="العربية">SA</button>
                 </div>
                 <!-- Theme Switcher -->
                 <button class="theme-toggle" id="themeToggle" title="Сменить тему">
@@ -85,13 +85,15 @@
                     <span class="title-icon">🔍</span>
                     <span data-i18n="searchTitle">Поиск фильмов</span>
                 </h2>
-                <p class="section-subtitle" data-i18n="searchSubtitle">Найдите любой фильм по названию</p>
+                <p class="section-subtitle" data-i18n="searchSubtitle">
+                    Найдите любой фильм по названию
+                </p>
             </div>
         </section>
 
-        <!-- ✅ قسم إضافة فيلم يدوي (Firestore) -->
+        <!-- Add Movie Section (Firestore) -->
         <section id="addMovieSection" class="add-custom-section">
-            <!-- هيتملى تلقائياً من app.js -->
+            <!-- يتملى تلقائياً من app.js -->
         </section>
 
         <!-- Movies Display Section -->
@@ -170,34 +172,33 @@
         console.log('%c✅ Firebase подключён!', 'color: #4CAF50; font-size: 16px; font-weight: bold;');
 
         // ============================================
-        // Helper functions
+        // Helper Functions
         // ============================================
         function scrollToSearch() {
             document.getElementById('searchSection').scrollIntoView({ behavior: 'smooth' });
         }
 
         function loadRandomMovie() {
-            const randomTitles = [
+            const titles = [
                 "Inception", "Matrix", "Interstellar",
                 "Joker", "Avatar", "Titanic", "Gladiator"
             ];
-            const random = randomTitles[Math.floor(Math.random() * randomTitles.length)];
             const input = document.getElementById('movieSearchInput');
             if (input) {
-                input.value = random;
+                input.value = titles[Math.floor(Math.random() * titles.length)];
                 handleSearch();
                 scrollToSearch();
             }
         }
 
         function loadTopRated() {
-            const topMovies = [
+            const tops = [
                 "The Shawshank Redemption", "The Godfather",
                 "The Dark Knight", "Pulp Fiction"
             ];
             const input = document.getElementById('movieSearchInput');
             if (input) {
-                input.value = topMovies[Math.floor(Math.random() * topMovies.length)];
+                input.value = tops[Math.floor(Math.random() * tops.length)];
                 handleSearch();
                 scrollToSearch();
             }
@@ -205,8 +206,7 @@
 
         function changeView(viewType) {
             const grid = document.getElementById('moviesGrid');
-            const buttons = document.querySelectorAll('.view-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
             event.target.closest('.view-btn').classList.add('active');
             grid.style.gridTemplateColumns = viewType === 'list'
                 ? '1fr'
