@@ -51,7 +51,7 @@ const translations = {
         fieldRating: 'Рейтинг (0-10)',
         fieldCountry: 'Страна',
         fieldDirector: 'Режиссёр',
-        fieldPoster: 'Ссылка на постер (URL)',
+        fieldPoster: 'Ссылка на постер (необязательно)',
         btnAdd: 'Добавить в базу данных',
         btnClear: 'Очистить',
         addSuccess: '✅ Фильм успешно добавлен!',
@@ -102,7 +102,7 @@ const translations = {
         fieldRating: 'التقييم (0-10)',
         fieldCountry: 'الدولة',
         fieldDirector: 'المخرج',
-        fieldPoster: 'رابط البوستر (URL)',
+        fieldPoster: 'رابط البوستر (اختياري)',
         btnAdd: 'أضف لقاعدة البيانات',
         btnClear: 'مسح',
         addSuccess: '✅ تم إضافة الفيلم بنجاح!',
@@ -128,8 +128,8 @@ let currentTheme = localStorage.getItem('theme') || 'dark';
 // تشغيل التطبيق
 // ============================================
 window.addEventListener('DOMContentLoaded', async () => {
-    console.log('%c🎬 Киноприложение запущено!', 'color: #e50914; font-size: 20px; font-weight: bold;');
-    console.log('%c🔥 Firebase + Firestore активны!', 'color: #FFA000; font-size: 14px;');
+    console.log('%c🎬 Киноприложение запущено!', 'color:#e50914; font-size:20px; font-weight:bold;');
+    console.log('%c🔥 Firebase + Firestore активны!', 'color:#FFA000; font-size:14px;');
 
     initializeLanguage();
     initializeTheme();
@@ -153,24 +153,27 @@ function initializeLanguage() {
 }
 
 function switchLanguage(lang) {
+    if (currentLang === lang) return; // منع التكرار
     currentLang = lang;
     localStorage.setItem('language', lang);
+
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.lang === lang);
     });
+
     document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
     document.documentElement.setAttribute('lang', lang);
+
     applyTranslations();
     setupSearchInterface();
     setupAddMovieForm();
+    loadAllMovies(); // إعادة ريندر الكروت لتغيير اللغة فوراً
 }
 
 function applyTranslations() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if (translations[currentLang][key]) {
-            el.textContent = translations[currentLang][key];
-        }
+        if (translations[currentLang][key]) el.textContent = translations[currentLang][key];
     });
 }
 
@@ -191,8 +194,7 @@ function toggleTheme() {
 }
 
 function updateThemeIcon() {
-    const icon = document.querySelector('.theme-icon');
-    icon.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+    document.querySelector('.theme-icon').textContent = currentTheme === 'dark' ? '🌙' : '☀️';
 }
 
 // ============================================
@@ -205,8 +207,7 @@ function setupSearchInterface() {
     const oldSearch = addSection.querySelector('.search-box-container');
     if (oldSearch) oldSearch.remove();
 
-    const searchContent = addSection.querySelector('.search-header');
-    if (searchContent) {
+    if (addSection.querySelector('.search-header')) {
         const searchBox = document.createElement('div');
         searchBox.className = 'search-box-container';
         searchBox.style.cssText = 'display:flex; gap:15px; justify-content:center; flex-wrap:wrap; margin-top:30px;';
@@ -234,12 +235,12 @@ function setupSearchInterface() {
         searchInput.addEventListener('focus', () => searchInput.style.boxShadow = '0 0 20px var(--shadow-color)');
         searchInput.addEventListener('blur', () => searchInput.style.boxShadow = 'none');
         searchBtn.addEventListener('click', handleSearch);
-        searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSearch(); });
+        searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleSearch(); });
     }
 }
 
 // ============================================
-// فورم إضافة فيلم - Netflix Style
+// فورم إضافة فيلم
 // ============================================
 function setupAddMovieForm() {
     const formSection = document.getElementById('addMovieSection');
@@ -276,7 +277,7 @@ function setupAddMovieForm() {
                     </div>
                     <div class="form-group">
                         <label class="form-label">🎥 ${translations[currentLang].fieldDirector}</label>
-                        <input type="text" id="newMovieDirector" class="form-input" placeholder="Алексей Балабанов">
+                        <input type="text" id="newMovieDirector" class="form-input" placeholder="Алексей Балабанов / المخرج">
                     </div>
                     <div class="form-group">
                         <label class="form-label">🌍 ${translations[currentLang].fieldCountry}</label>
@@ -294,8 +295,13 @@ function setupAddMovieForm() {
                                   placeholder="اكتب وصف الفيلم..."></textarea>
                     </div>
                     <div class="form-group form-group-full">
-                        <label class="form-label">🖼 ${translations[currentLang].fieldPoster}</label>
-                        <input type="url" id="newMoviePoster" class="form-input" placeholder="https://...poster.jpg">
+                        <label class="form-label">🖼 ${translations[currentLang].fieldPoster}
+                            <span style="color:#4CAF50; font-size:0.75rem; margin-right:8px;">
+                                ✨ اتركه فاضي وسيتم جلب الصورة تلقائياً
+                            </span>
+                        </label>
+                        <input type="url" id="newMoviePoster" class="form-input"
+                               placeholder="https://...poster.jpg (اختياري)">
                     </div>
                 </div>
                 <div class="form-buttons">
@@ -317,18 +323,17 @@ function setupAddMovieForm() {
 }
 
 // ============================================
-// إضافة فيلم لـ Firestore ✅
-// Collection: أفلام
+// إضافة فيلم - الترجمة والجلب التلقائي (النسخة النهائية الذكية) ✅
 // ============================================
 async function addCustomMovie() {
-    const title    = document.getElementById('newMovieTitle').value.trim();
-    const year     = document.getElementById('newMovieYear').value.trim();
-    const genre    = document.getElementById('newMovieGenre').value.trim();
-    const desc     = document.getElementById('newMovieDesc').value.trim();
-    const rating   = document.getElementById('newMovieRating').value.trim();
+    const title = document.getElementById('newMovieTitle').value.trim();
+    const year = document.getElementById('newMovieYear').value.trim();
+    const genre = document.getElementById('newMovieGenre').value.trim();
+    const userDesc = document.getElementById('newMovieDesc').value.trim(); // الوصف اللي كتبه اليوزر
+    const rating = document.getElementById('newMovieRating').value.trim();
     const director = document.getElementById('newMovieDirector').value.trim();
-    const country  = document.getElementById('newMovieCountry').value;
-    const poster   = document.getElementById('newMoviePoster').value.trim();
+    const country = document.getElementById('newMovieCountry').value;
+    let poster = document.getElementById('newMoviePoster').value.trim();
 
     if (!title || !year) {
         showNotification(translations[currentLang].fillRequired, 'warning');
@@ -337,20 +342,64 @@ async function addCustomMovie() {
 
     const addBtn = document.getElementById('addMovieBtn');
     addBtn.disabled = true;
-    addBtn.innerHTML = '⏳ ...';
+    addBtn.innerHTML = '⏳ جاري الإضافة والترجمة...';
+
+    // المتغيرات اللي هتتحفظ
+    let ruTitle = title;
+    let arTitle = title;
+    let ruDesc = userDesc; // مبدئياً بياخد اللي اليوزر كتبه
+    let arDesc = userDesc; // مبدئياً بياخد اللي اليوزر كتبه
 
     try {
-        await db.collection('أفلام').add({
-            title,
+        // جلب الداتا بالروسي
+        const resRu = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=ru-RU`);
+        const dataRu = await resRu.json();
+        if (dataRu.results?.length > 0) {
+            ruTitle = dataRu.results[0].title || title;
+            // لو اليوزر مكتبش وصف، هات بتاع الـ API
+            if (!userDesc) ruDesc = dataRu.results[0].overview || '';
+
+            if (!poster && dataRu.results[0].poster_path) {
+                poster = `${TMDB_IMAGE_URL}${dataRu.results[0].poster_path}`;
+            }
+        }
+
+        // جلب الداتا بالعربي
+        const resAr = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=ar-AE`);
+        const dataAr = await resAr.json();
+        if (dataAr.results?.length > 0) {
+            arTitle = dataAr.results[0].title || title;
+            // لو اليوزر مكتبش وصف، هات بتاع الـ API
+            if (!userDesc) arDesc = dataAr.results[0].overview || '';
+        }
+
+        // لو ملقاش بوستر يجيب من OMDb
+        if (!poster) {
+            const omdbRes = await fetch(`${OMDB_API_URL}?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`);
+            const omdbData = await omdbRes.json();
+            if (omdbData.Poster && omdbData.Poster !== 'N/A') poster = omdbData.Poster;
+        }
+    } catch (e) {
+        console.log('Auto fetch failed:', e);
+    }
+
+    try {
+        await db.collection('movies').add({
+            title_ru: ruTitle || title,
+            title_ar: arTitle || title,
+            title: title,
             year,
-            genre:       genre    || 'N/A',
-            description: desc     || 'N/A',
-            rating:      rating   || 'N/A',
-            director:    director || 'N/A',
-            country:     country  || 'OTHER',
-            poster:      poster   || '',
-            source:      'custom',
-            timestamp:   firebase.firestore.FieldValue.serverTimestamp()
+            genre: genre || 'N/A',
+            // الحفظ في الداتابيز
+            description_ru: ruDesc || userDesc || '',
+            description_ar: arDesc || userDesc || '',
+            description: userDesc || '',
+            rating: rating || 'N/A',
+            director: director || 'N/A',
+            country: country || 'OTHER',
+            poster: poster || '',
+            source: 'custom',
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
 
         showNotification(translations[currentLang].addSuccess, 'success');
@@ -367,24 +416,22 @@ async function addCustomMovie() {
 }
 
 // ============================================
-// تحميل أفلام Firestore فقط ✅
-// Collection: أفلام
+// تحميل أفلام Firestore
 // ============================================
 async function loadAllMovies() {
     showLoadingMessage(translations[currentLang].loading);
 
     try {
-        const snapshot = await db.collection('أفلام')
-            .orderBy('timestamp', 'desc')
-            .get();
-
+        const snapshot = await db.collection('movies').get();
         const movies = [];
+
         snapshot.forEach(doc => {
             movies.push({ id: doc.id, ...doc.data(), isCustom: true });
         });
 
-        console.log(`%c📌 تم تحميل ${movies.length} فيلم من Firestore`, 'color: #FFA000; font-size: 14px;');
-        renderMovies(movies);
+        movies.length === 0
+            ? showErrorMessage(translations[currentLang].noResults)
+            : renderMovies(movies);
 
     } catch (error) {
         console.error('Firestore load error:', error);
@@ -393,7 +440,7 @@ async function loadAllMovies() {
 }
 
 // ============================================
-// البحث في Firestore فقط ✅
+// البحث في Firestore
 // ============================================
 async function handleSearch() {
     const query = document.getElementById('movieSearchInput')?.value.trim();
@@ -405,12 +452,17 @@ async function handleSearch() {
     showLoadingMessage(translations[currentLang].searching);
 
     try {
-        const snapshot = await db.collection('أفلام').get();
+        const snapshot = await db.collection('movies').get();
         const results = [];
 
         snapshot.forEach(doc => {
             const data = doc.data();
-            if (data.title?.toLowerCase().includes(query.toLowerCase())) {
+            // البحث بيشمل كل الأسماء المتاحة للفيلم
+            if (
+                data.title?.toLowerCase().includes(query.toLowerCase()) ||
+                data.title_ru?.toLowerCase().includes(query.toLowerCase()) ||
+                data.title_ar?.toLowerCase().includes(query.toLowerCase())
+            ) {
                 results.push({ id: doc.id, ...data, isCustom: true });
             }
         });
@@ -428,7 +480,7 @@ async function handleSearch() {
 // عرض الأفلام
 // ============================================
 function renderMovies(movies) {
-    const grid  = document.getElementById('moviesGrid');
+    const grid = document.getElementById('moviesGrid');
     const count = document.getElementById('movieCount');
     if (!grid) return;
 
@@ -444,21 +496,78 @@ function renderMovies(movies) {
 }
 
 // ============================================
-// كارت الفيلم
+// تحديث البوستر تلقائياً لو الرابط انكسر
+// ============================================
+async function refreshPosterOnError(imgEl, encodedTitle, docId) {
+    imgEl.onerror = null;
+    const title = decodeURIComponent(encodedTitle);
+
+    try {
+        let newPoster = '';
+        const res1 = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=ru-RU`);
+        const data1 = await res1.json();
+        if (data1.results?.[0]?.poster_path) {
+            newPoster = `${TMDB_IMAGE_URL}${data1.results[0].poster_path}`;
+        }
+
+        if (!newPoster) {
+            const res2 = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=en-US`);
+            const data2 = await res2.json();
+            if (data2.results?.[0]?.poster_path) {
+                newPoster = `${TMDB_IMAGE_URL}${data2.results[0].poster_path}`;
+            }
+        }
+
+        if (!newPoster) {
+            const res3 = await fetch(`${OMDB_API_URL}?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`);
+            const data3 = await res3.json();
+            if (data3.Poster && data3.Poster !== 'N/A') {
+                newPoster = data3.Poster;
+            }
+        }
+
+        if (newPoster) {
+            imgEl.src = newPoster;
+            await db.collection('movies').doc(docId).update({ poster: newPoster });
+        } else {
+            imgEl.style.display = 'none';
+            imgEl.nextElementSibling.style.display = 'flex';
+        }
+    } catch (e) {
+        imgEl.style.display = 'none';
+        imgEl.nextElementSibling.style.display = 'flex';
+    }
+}
+
+// ============================================
+// كارت الفيلم (بحل مشكلة الوصف الفاضي والترجمة) ✅
 // ============================================
 function createMovieCard(movie) {
     const card = document.createElement('div');
     card.className = 'movie-card custom-card';
 
-    const title  = movie.title;
-    const year   = movie.year;
-    const genre  = movie.genre;
-    const plot   = movie.description || movie.plot || '—';
+    // ✅ تحديد الاسم بناءً على اللغة
+    const title = currentLang === 'ar'
+        ? (movie.title_ar || movie.title_ru || movie.title)
+        : (movie.title_ru || movie.title);
+
+    // ✅ تحديد الوصف بناءً على اللغة بقوة
+    let plot = currentLang === 'ar'
+        ? (movie.description_ar || movie.description || movie.description_ru)
+        : (movie.description_ru || movie.description || movie.description_ar);
+
+    // تأكيد إن الـ plot مش N/A أو فاضي عشان ميبوظش الكارت
+    if (!plot || plot === 'N/A' || plot.trim() === '') {
+        plot = currentLang === 'ar' ? 'الوصف غير متاح' : 'Нет описания';
+    }
+
+    const year = movie.year;
+    const genre = movie.genre;
     const rating = movie.rating;
     const poster = movie.poster;
-    const isRu   = movie.country === 'RU';
+    const isRu = movie.country === 'RU';
 
-    const hasPoster  = poster && poster !== 'N/A' && poster !== '';
+    const hasPoster = poster && poster !== 'N/A' && poster !== '';
     const gradientBg = currentTheme === 'dark'
         ? 'linear-gradient(135deg, #1a1a2e, #16213e)'
         : 'linear-gradient(135deg, #f0f0f0, #e0e0e0)';
@@ -473,18 +582,18 @@ function createMovieCard(movie) {
             ${hasPoster ? `
                 <img src="${poster}" alt="${title}"
                      style="width:100%; height:100%; object-fit:cover; transition:0.4s;"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                     onerror="refreshPosterOnError(this, '${encodeURIComponent(movie.title)}', '${movie.id}')">
                 <div style="display:none; position:absolute; top:0; left:0; right:0; bottom:0;
-                            background:${gradientBg};
-                            justify-content:center; align-items:center; flex-direction:column; gap:15px;">
+                            background:${gradientBg}; justify-content:center; align-items:center;
+                            flex-direction:column; gap:15px;">
                     <div style="font-size:4rem;">🎬</div>
                     <div style="font-size:1.2rem; font-weight:bold; color:var(--text-color);
                                 text-align:center; padding:0 20px;">${title}</div>
                 </div>
             ` : `
                 <div style="display:flex; position:absolute; top:0; left:0; right:0; bottom:0;
-                            background:${gradientBg};
-                            justify-content:center; align-items:center; flex-direction:column; gap:15px;">
+                            background:${gradientBg}; justify-content:center; align-items:center;
+                            flex-direction:column; gap:15px;">
                     <div style="font-size:4rem;">🎬</div>
                     <div style="font-size:1.2rem; font-weight:bold; color:var(--text-color);
                                 text-align:center; padding:0 20px;">${title}</div>
@@ -511,7 +620,7 @@ function createMovieCard(movie) {
             </div>
             <p style="color:var(--text-secondary); font-size:0.9rem; line-height:1.6;
                       margin:15px 0; min-height:55px;">
-                ${plot !== 'N/A' ? (plot.length > 120 ? plot.substring(0, 120) + '...' : plot) : '—'}
+                ${plot.length > 120 ? plot.substring(0, 120) + '...' : plot}
             </p>
             <div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap;">
                 <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(title + ' trailer')}"
@@ -593,45 +702,33 @@ function openEditModal(docId) {
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
                 <div>
                     <label style="color:#aaa; font-size:0.8rem; font-weight:700;
-                                  text-transform:uppercase; display:block; margin-bottom:6px;">
-                        🎬 الاسم *
-                    </label>
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">🎬 الاسم *</label>
                     <input id="editTitle" class="form-input" type="text" placeholder="اسم الفيلم">
                 </div>
                 <div>
                     <label style="color:#aaa; font-size:0.8rem; font-weight:700;
-                                  text-transform:uppercase; display:block; margin-bottom:6px;">
-                        📅 السنة *
-                    </label>
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">📅 السنة *</label>
                     <input id="editYear" class="form-input" type="number" placeholder="1997">
                 </div>
                 <div>
                     <label style="color:#aaa; font-size:0.8rem; font-weight:700;
-                                  text-transform:uppercase; display:block; margin-bottom:6px;">
-                        🎭 الجانر
-                    </label>
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">🎭 الجانر</label>
                     <input id="editGenre" class="form-input" type="text" placeholder="Drama, Action">
                 </div>
                 <div>
                     <label style="color:#aaa; font-size:0.8rem; font-weight:700;
-                                  text-transform:uppercase; display:block; margin-bottom:6px;">
-                        ⭐ الرايتنج
-                    </label>
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">⭐ الرايتنج</label>
                     <input id="editRating" class="form-input" type="number"
                            placeholder="8.1" min="0" max="10" step="0.1">
                 </div>
                 <div>
                     <label style="color:#aaa; font-size:0.8rem; font-weight:700;
-                                  text-transform:uppercase; display:block; margin-bottom:6px;">
-                        🎥 المخرج
-                    </label>
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">🎥 المخرج</label>
                     <input id="editDirector" class="form-input" type="text" placeholder="المخرج">
                 </div>
                 <div>
                     <label style="color:#aaa; font-size:0.8rem; font-weight:700;
-                                  text-transform:uppercase; display:block; margin-bottom:6px;">
-                        🌍 البلد
-                    </label>
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">🌍 البلد</label>
                     <select id="editCountry" class="form-input">
                         <option value="OTHER">🌐 Other</option>
                         <option value="RU">🇷🇺 Россия</option>
@@ -642,26 +739,19 @@ function openEditModal(docId) {
                 </div>
                 <div style="grid-column:1/-1;">
                     <label style="color:#aaa; font-size:0.8rem; font-weight:700;
-                                  text-transform:uppercase; display:block; margin-bottom:6px;">
-                        📖 الوصف
-                    </label>
-                    <textarea id="editDesc" class="form-input form-textarea"
-                              placeholder="وصف الفيلم..."></textarea>
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">📖 الوصف</label>
+                    <textarea id="editDesc" class="form-input form-textarea" placeholder="وصف الفيلم..."></textarea>
                 </div>
                 <div style="grid-column:1/-1;">
                     <label style="color:#aaa; font-size:0.8rem; font-weight:700;
-                                  text-transform:uppercase; display:block; margin-bottom:6px;">
-                        🖼 رابط البوستر
-                    </label>
-                    <input id="editPoster" class="form-input" type="url"
-                           placeholder="https://...poster.jpg">
+                                  text-transform:uppercase; display:block; margin-bottom:6px;">🖼 رابط البوستر</label>
+                    <input id="editPoster" class="form-input" type="url" placeholder="https://...poster.jpg">
                 </div>
             </div>
 
             <div style="display:flex; gap:12px; margin-top:25px; justify-content:center;">
                 <button id="saveEditBtn"
-                        style="display:flex; align-items:center; gap:8px;
-                               padding:14px 35px;
+                        style="display:flex; align-items:center; gap:8px; padding:14px 35px;
                                background:linear-gradient(135deg,#e50914,#b20710);
                                color:white; border:none; border-radius:50px; font-size:1rem;
                                font-weight:bold; cursor:pointer; transition:0.3s;
@@ -669,9 +759,9 @@ function openEditModal(docId) {
                     💾 حفظ التعديلات
                 </button>
                 <button onclick="document.getElementById('editModal').remove()"
-                        style="display:flex; align-items:center; gap:8px;
-                               padding:14px 25px; background:rgba(255,255,255,0.05);
-                               color:#888; border:1.5px solid rgba(255,255,255,0.1);
+                        style="display:flex; align-items:center; gap:8px; padding:14px 25px;
+                               background:rgba(255,255,255,0.05); color:#888;
+                               border:1.5px solid rgba(255,255,255,0.1);
                                border-radius:50px; font-size:1rem; cursor:pointer;">
                     ✕ إلغاء
                 </button>
@@ -681,31 +771,29 @@ function openEditModal(docId) {
 
     document.body.appendChild(modal);
 
-    // ملء بيانات الفيلم
-    db.collection('أفلام').doc(docId).get().then(doc => {
+    db.collection('movies').doc(docId).get().then(doc => {
         if (doc.exists) {
             const d = doc.data();
-            document.getElementById('editTitle').value    = d.title       || '';
-            document.getElementById('editYear').value     = d.year        || '';
-            document.getElementById('editGenre').value    = d.genre       || '';
-            document.getElementById('editRating').value   = d.rating      || '';
-            document.getElementById('editDirector').value = d.director    || '';
-            document.getElementById('editCountry').value  = d.country     || 'OTHER';
-            document.getElementById('editDesc').value     = d.description || d.plot || '';
-            document.getElementById('editPoster').value   = d.poster      || '';
+            document.getElementById('editTitle').value = d.title || '';
+            document.getElementById('editYear').value = d.year || '';
+            document.getElementById('editGenre').value = d.genre || '';
+            document.getElementById('editRating').value = d.rating || '';
+            document.getElementById('editDirector').value = d.director || '';
+            document.getElementById('editCountry').value = d.country || 'OTHER';
+            document.getElementById('editDesc').value = d.description || '';
+            document.getElementById('editPoster').value = d.poster || '';
         }
     });
 
-    // حفظ التعديلات
     document.getElementById('saveEditBtn').addEventListener('click', async () => {
-        const title    = document.getElementById('editTitle').value.trim();
-        const year     = document.getElementById('editYear').value.trim();
-        const genre    = document.getElementById('editGenre').value.trim();
-        const rating   = document.getElementById('editRating').value.trim();
+        const title = document.getElementById('editTitle').value.trim();
+        const year = document.getElementById('editYear').value.trim();
+        const genre = document.getElementById('editGenre').value.trim();
+        const rating = document.getElementById('editRating').value.trim();
         const director = document.getElementById('editDirector').value.trim();
-        const country  = document.getElementById('editCountry').value;
-        const desc     = document.getElementById('editDesc').value.trim();
-        const poster   = document.getElementById('editPoster').value.trim();
+        const country = document.getElementById('editCountry').value;
+        const desc = document.getElementById('editDesc').value.trim();
+        let poster = document.getElementById('editPoster').value.trim();
 
         if (!title || !year) {
             showNotification(translations[currentLang].fillRequired, 'warning');
@@ -717,15 +805,15 @@ function openEditModal(docId) {
         saveBtn.textContent = '⏳ ...';
 
         try {
-            await db.collection('أفلام').doc(docId).update({
+            await db.collection('movies').doc(docId).update({
                 title,
                 year,
-                genre:       genre    || 'N/A',
-                description: desc     || 'N/A',
-                rating:      rating   || 'N/A',
-                director:    director || 'N/A',
-                country:     country  || 'OTHER',
-                poster:      poster   || ''
+                genre: genre || 'N/A',
+                description: desc || '',
+                rating: rating || 'N/A',
+                director: director || 'N/A',
+                country: country || 'OTHER',
+                poster: poster || ''
             });
 
             showNotification(translations[currentLang].editSuccess, 'success');
@@ -740,10 +828,7 @@ function openEditModal(docId) {
         }
     });
 
-    // إغلاق بالضغط برا الـ Modal
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.remove();
-    });
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
 }
 
 // ============================================
@@ -752,7 +837,7 @@ function openEditModal(docId) {
 async function deleteCustomMovie(docId) {
     if (!confirm('🗑 تأكيد الحذف؟')) return;
     try {
-        await db.collection('أفلام').doc(docId).delete();
+        await db.collection('movies').doc(docId).delete();
         showNotification(translations[currentLang].deleteSuccess, 'success');
         loadAllMovies();
     } catch (error) {
@@ -764,11 +849,11 @@ async function deleteCustomMovie(docId) {
 // مسح الفورم
 // ============================================
 function clearForm() {
-    ['newMovieTitle','newMovieYear','newMovieGenre','newMovieDesc',
-     'newMovieRating','newMovieDirector','newMoviePoster'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-    });
+    ['newMovieTitle', 'newMovieYear', 'newMovieGenre', 'newMovieDesc',
+        'newMovieRating', 'newMovieDirector', 'newMoviePoster'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
     const country = document.getElementById('newMovieCountry');
     if (country) country.value = 'OTHER';
 }
@@ -781,13 +866,13 @@ function scrollToSearch() {
 }
 
 function loadRandomMovie() {
-    showNotification('🎲 جاري تحميل فيلم عشوائي...', 'success');
+    showNotification('🎲 تحميل...', 'success');
     loadAllMovies();
     scrollToSearch();
 }
 
 function loadTopRated() {
-    showNotification('🏆 جاري تحميل الأفلام...', 'success');
+    showNotification('🏆 تحميل...', 'success');
     loadAllMovies();
     scrollToSearch();
 }
@@ -802,7 +887,7 @@ function changeView(viewType) {
 }
 
 // ============================================
-// الرسائل
+// الرسائل والإشعارات
 // ============================================
 function showLoadingMessage(msg) {
     const grid = document.getElementById('moviesGrid');
@@ -823,8 +908,8 @@ function showNotification(msg, type) {
     const notif = document.createElement('div');
     notif.style.cssText = `
         position:fixed; top:30px; ${currentLang === 'ar' ? 'left' : 'right'}:30px; z-index:100000;
-        background:${colors[type] || colors.error};
-        color:white; padding:20px 30px; border-radius:10px;
+        background:${colors[type] || colors.error}; color:white;
+        padding:20px 30px; border-radius:10px;
         box-shadow:0 8px 30px rgba(0,0,0,0.5);
         font-weight:bold; font-size:1.1rem;
         animation:slideIn 0.5s ease;
@@ -837,8 +922,8 @@ function showNotification(msg, type) {
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {
-        from { transform: translateX(${currentLang === 'ar' ? '-' : ''}400px); opacity: 0; }
-        to   { transform: translateX(0); opacity: 1; }
+        from { transform: translateX(${currentLang === 'ar' ? '-' : ''}400px); opacity:0; }
+        to   { transform: translateX(0); opacity:1; }
     }
 `;
 document.head.appendChild(style);
