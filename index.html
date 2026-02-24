@@ -187,6 +187,17 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        // السطر ده هيسرع الموقع جداً وهيشغله أوفلاين!
+        db.enablePersistence()
+            .catch(function (err) {
+                if (err.code == 'failed-precondition') {
+                    console.log("التبويبات المتعددة مفتوحة، لا يمكن تشغيل الأوفلاين.");
+                } else if (err.code == 'unimplemented') {
+                    console.log("المتصفح لا يدعم الأوفلاين.");
+                }
+            });
+
         console.log('%c✅ Firebase подключён!', 'color: #4CAF50; font-size: 16px; font-weight: bold;');
 
         // ============================================
