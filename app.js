@@ -5,14 +5,16 @@ const OMDB_API_KEY = '7fa8063c';
 const OMDB_API_URL = 'https://www.omdbapi.com/';
 const TMDB_API_KEY = '8265bd1679663a7ea12ac168da84d2e8';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-const TMDB_IMAGE_URL = 'https://image.tmdb.org/t/p/w500';
+
+// التعديل السحري عشان الصور تفتح في روسيا من غير VPN 
+// (تم استبدال الرابط الأساسي برابط البروكسي)
+const TMDB_IMAGE_URL = 'https://tmdb.de.anuok.ru/t/p/w500';
 
 const originalWarn = console.warn;
 console.warn = function (...args) {
     if (args[0]?.includes?.('Tracking Prevention')) return;
     originalWarn.apply(console, args);
 };
-
 // ============================================
 // الترجمات
 // ============================================
