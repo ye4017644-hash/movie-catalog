@@ -233,19 +233,10 @@ body::after {
     padding: 60px 20px;
 }
 
-body.light-mode .hero-section {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(240, 240, 240, 0.9) 100%),
-        url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1920&q=80') center/cover;
-}
-
 .hero-overlay {
     position: absolute;
     inset: 0;
     background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.7) 100%);
-}
-
-body.light-mode .hero-overlay {
-    background: radial-gradient(circle at center, transparent 0%, rgba(255, 255, 255, 0.7) 100%);
 }
 
 .hero-content {
@@ -270,9 +261,10 @@ body.light-mode .hero-title {
 
 .hero-subtitle {
     font-size: 1.5rem;
-    color: var(--text-color);
+    color: #f5f5f5;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
     margin-bottom: 40px;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .hero-stats {
@@ -320,6 +312,7 @@ body.light-mode .hero-title {
     font-weight: 700;
 }
 
+
 .hero-scroll-indicator {
     position: absolute;
     bottom: 20px;
@@ -329,7 +322,8 @@ body.light-mode .hero-title {
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    color: var(--text-color);
+    color: #f5f5f5;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9);
     animation: bounce 2s infinite;
     cursor: pointer;
     z-index: 10;
@@ -449,13 +443,10 @@ body.light-mode .hero-title {
     margin: 40px auto;
 }
 
-/* إخفاء فورم الإضافة عن المستخدمين العاديين */
 #addMovieSection {
     display: none;
-    /* مخفي افتراضياً */
 }
 
-/* الكلاس ده بيضاف بالجافاسكريبت لما تكتب الباسورد السري */
 #addMovieSection.admin-mode {
     display: block;
     animation: fadeIn 0.5s ease;
@@ -1021,6 +1012,44 @@ textarea::placeholder {
     letter-spacing: 0.5px;
 }
 
+/* ============================================
+   تعديلات حصرية لتنظيف الـ Light Mode (الهيرو)
+   ============================================ */
+
+/* 1. تفتيح الصورة بشكل نظيف وبدون بهتان في الأطراف */
+body.light-mode .hero-section {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.7) 100%),
+        url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1920&q=80') center/cover !important;
+}
+
+/* 2. مسح الظل الأسود المبهت اللي كان بيغمق النص من النص */
+body.light-mode .hero-overlay {
+    background: transparent !important;
+    /* مسحناه تماماً عشان ميغبش على الصورة */
+}
+
+/* 3. تغميق النصوص عشان تبان على الكراسي الفاتحة */
+body.light-mode .hero-subtitle {
+    color: #1a1a1a !important;
+    /* أسود داكن صريح */
+    text-shadow: 0 1px 5px rgba(255, 255, 255, 0.9) !important;
+    /* هالة بيضاء خفيفة ورا الكلام تبرزه */
+    font-weight: 500 !important;
+    /* تخنا الخط سنة */
+}
+
+/* 4. تغميق سهم النزول ونص "ابدأ البحث" */
+body.light-mode .hero-scroll-indicator {
+    color: #1a1a1a !important;
+    /* أسود داكن */
+    text-shadow: 0 1px 5px rgba(255, 255, 255, 0.9) !important;
+    /* هالة بيضاء */
+}
+
+body.light-mode .scroll-arrow {
+    color: var(--primary-color) !important;
+    /* أحمر صريح */
+}
 
 /* ============================================
    12. RESPONSIVE DESIGN (MOBILE & TABLET)
