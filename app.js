@@ -927,3 +927,202 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+// =================================================
+// 🔥 إضافات الأزرار الجديدة (مع دعم اللغتين الروسية والعربية)
+// =================================================
+
+// دالة لمعرفة اللغة الحالية للموقع
+function getCurrentLanguage() {
+    // بيفحص إذا كان المستخدم ضاغط على زر عربي أو لغة الصفحة حالياً عربي
+    const htmlLang = document.documentElement.lang;
+    return htmlLang === 'ar' ? 'ar' : 'ru';
+}
+
+// 1. وظيفة النزول للبحث والتركيز عليه
+function scrollToSearch() {
+    const searchSection = document.getElementById('searchSection');
+    if (searchSection) {
+        searchSection.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => {
+            const searchInput = document.getElementById('movieSearchInput');
+            if (searchInput) searchInput.focus();
+        }, 800);
+    }
+}
+
+// 2. وظيفة الفيلم العشوائي
+function loadRandomMovie() {
+    const grid = document.getElementById('moviesGrid');
+    const cards = document.querySelectorAll('.movie-card');
+
+    if (cards.length > 0) {
+        grid.scrollIntoView({ behavior: 'smooth' });
+
+        // إخفاء كل الكروت
+        cards.forEach(card => {
+            card.style.display = 'none';
+        });
+
+        // إظهار كارت واحد عشوائي
+        const random = Math.floor(Math.random() * cards.length);
+        cards[random].style.display = 'flex';
+
+        // تغيير العنوان حسب اللغة
+        const currentLang = getCurrentLanguage();
+        const titleText = currentLang === 'ar' ? 'اخترنا لك عشوائياً' : 'Случайный выбор';
+
+        const title = document.querySelector('.movies-section .section-title');
+        if (title) {
+            title.innerHTML = `<span class="title-icon">🎲</span> <span>${titleText}</span>`;
+        }
+    } else {
+        scrollToSearch();
+    }
+}
+
+// 3. وظيفة الأعلى تقييماً
+function loadTopRated() {
+    const grid = document.getElementById('moviesGrid');
+    const cards = document.querySelectorAll('.movie-card');
+
+    if (cards.length > 0) {
+        grid.scrollIntoView({ behavior: 'smooth' });
+        let count = 0;
+
+        cards.forEach(card => {
+            const text = card.innerText || "";
+            // البحث عن التقييم سواء رقم عشري زي 8.5 أو 10 
+            const rating = text.match(/(\d+\.\d+)|\b10\b|\b[8-9]\b/);
+
+            // لو التقييم موجود وأكبر من أو يساوي 8
+            if (rating && parseFloat(rating[0]) >= 8.0) {
+                card.style.display = 'flex';
+                count++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // تغيير العنوان حسب اللغة
+        const currentLang = getCurrentLanguage();
+        const titleText = currentLang === 'ar' ? `الأعلى تقييماً (${count})` : `Топ рейтинг (${count})`;
+
+        const title = document.querySelector('.movies-section .section-title');
+        if (title) {
+            title.innerHTML = `<span class="title-icon">🏆</span> <span>${titleText}</span>`;
+        }
+    } else {
+        scrollToSearch();
+    }
+}
+// =================================================
+// 🎬 دالة الفلترة بالنوع (Genre Filter) - منفصلة عن البحث
+// =================================================
+
+function filterByGenre(genre) {
+    const cards = document.querySelectorAll('.movie-card');
+    const grid = document.getElementById('moviesGrid');
+    const noResults = document.getElementById('noResults');
+    let count = 0;
+
+    if (cards.length === 0) {
+        // لو مفيش كروت معروضة، ابعت للبحث عن الجونر
+        const input = document.getElementById('movieSearchInput');
+        if (input && typeof handleSearch === 'function') {
+            input.value = genre;
+            handleSearch();
+        }
+        return;
+    }
+
+    // فلترة الكروت الموجودة بحث عن الـ Genre في المحتوى
+    cards.forEach(card => {
+        const cardText = card.innerText.toLowerCase();
+        const genreLower = genre.toLowerCase();
+
+        if (cardText.includes(genreLower)) {
+            card.style.display = 'flex';
+            count++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    // تحديث العنوان حسب اللغة
+    const lang = getCurrentLanguage();
+    const titleEl = document.querySelector('.movies-section .section-title span:nth-child(2)');
+    if (titleEl) {
+        titleEl.textContent = lang === 'ar'
+            ? `${genre} (${count})`
+            : `${genre} (${count})`;
+    }
+
+    // إظهار أو إخفاء رسالة "لا توجد أفلام"
+    if (noResults) {
+        noResults.style.display = count === 0 ? 'block' : 'none';
+    }
+
+    // النزول لقسم الأفلام
+    grid.scrollIntoView({ behavior: 'smooth' });
+}
+// =================================================
+// دالة إعادة عرض كل الأفلام (Reset) مع النزول تحت
+// =================================================
+function showAllMovies() {
+    const grid = document.getElementById('moviesGrid');
+    const cards = document.querySelectorAll('.movie-card');
+
+    // إظهار كل الأفلام
+    cards.forEach(card => card.style.display = 'flex');
+
+    // إخفاء رسالة لا يوجد نتائج
+    const noResults = document.getElementById('noResults');
+    if (noResults) noResults.style.display = 'none';
+
+    // استرجاع العنوان الأصلي حسب اللغة
+    const titleEl = document.querySelector('.movies-section .section-title span:nth-child(2)');
+    const lang = getCurrentLanguage();
+    if (titleEl) {
+        titleEl.textContent = lang === 'ar' ? 'الأفلام الشائعة' : 'Популярные фильмы';
+    }
+
+    // النزول لقسم الأفلام بنعومة (ده اللي كان ناقص!)
+    if (grid) {
+        grid.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+// =================================================
+// 🔒 نظام الحماية السري (Admin Access Only)
+// =================================================
+
+// الاستماع للضغطات على الكيبورد لفتح الباب السري
+let secretKey = "";
+const adminPassword = "elaraby"; // دي كلمة السر بتاعتك، اكتبها وأنت فاتح الموقع
+
+document.addEventListener('keydown', function (e) {
+    // تجميع الحروف اللي بتكتبها
+    secretKey += e.key.toLowerCase();
+
+    // الاحتفاظ بآخر 5 حروف فقط (طول كلمة admin)
+    if (secretKey.length > adminPassword.length) {
+        secretKey = secretKey.slice(-adminPassword.length);
+    }
+
+    // لو كتبت كلمة السر صح (بدون ما يكون في مربع كتابة، اكتبها على الكيبورد بس)
+    if (secretKey === adminPassword) {
+        const formSection = document.getElementById('addMovieSection');
+        if (formSection) {
+            // إظهار الفورم
+            formSection.classList.add('admin-mode');
+
+            // تنبيه إن وضع الأدمن اشتغل
+            alert(getCurrentLanguage() === 'ar'
+                ? "مرحباً يا يوسف! تم تفعيل وضع المسؤول. يمكنك الآن إضافة أفلام."
+                : "Добро пожаловать, Юссеф! Режим администратора активирован.");
+
+            // النزول للفورم
+            formSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        secretKey = ""; // تفريغ الكلمة عشان متتكررش
+    }
+});
