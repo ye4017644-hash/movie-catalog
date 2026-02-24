@@ -13,7 +13,6 @@
 </head>
 
 <body>
-    <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">
@@ -21,12 +20,10 @@
                 <span class="logo-text">КИНОПОРТАЛ</span>
             </div>
             <div class="nav-controls">
-                <!-- Language Switcher -->
                 <div class="language-switcher">
                     <button class="lang-btn active" data-lang="ru" title="Русский">RU</button>
                     <button class="lang-btn" data-lang="ar" title="العربية">SA</button>
                 </div>
-                <!-- Theme Switcher -->
                 <button class="theme-toggle" id="themeToggle" title="Сменить тему">
                     <span class="theme-icon">🌙</span>
                 </button>
@@ -34,7 +31,6 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="hero-section">
         <div class="hero-overlay"></div>
         <div class="hero-content">
@@ -62,7 +58,6 @@
     </section>
 
     <main class="container">
-        <!-- Quick Actions -->
         <section class="quick-actions">
             <button class="quick-btn" onclick="scrollToSearch()">
                 <span>🔍</span>
@@ -78,25 +73,47 @@
             </button>
         </section>
 
-        <!-- Search Section -->
         <section class="add-movie-section" id="searchSection">
             <div class="search-header">
                 <h2 class="section-title">
                     <span class="title-icon">🔍</span>
-                    <span data-i18n="searchTitle">Поиск фильмов</span>
+                    <span data-i18n="searchTitle">Поиск <span>фильмов</span></span>
                 </h2>
                 <p class="section-subtitle" data-i18n="searchSubtitle">
                     Найдите любой фильм по названию
                 </p>
             </div>
+
+            <div class="search-box-container">
+                <input type="text" id="movieSearchInput" placeholder="Введите название фильма..."
+                    onkeypress="if(event.key === 'Enter') { if(typeof handleSearch === 'function') handleSearch(); }">
+                <button id="movieSearchBtn" onclick="if(typeof handleSearch === 'function') handleSearch();">
+                    🔍 <span data-i18n="btnSearchText">Найти</span>
+                </button>
+            </div>
+
+            <div class="search-filters">
+                <span class="filter-chip" onclick="showAllMovies()">
+                    🎬 All
+                </span>
+                <span class="filter-chip" onclick="filterByGenre('Action')">
+                    💥 Action
+                </span>
+                <span class="filter-chip" onclick="filterByGenre('Drama')">
+                    🎭 Drama
+                </span>
+                <span class="filter-chip" onclick="filterByGenre('Comedy')">
+                    😂 Comedy
+                </span>
+                <span class="filter-chip" onclick="filterByGenre('2024')">
+                    📅 2024
+                </span>
+            </div>
         </section>
 
-        <!-- Add Movie Section (Firestore) -->
         <section id="addMovieSection" class="add-custom-section">
-            <!-- يتملى تلقائياً من app.js -->
         </section>
 
-        <!-- Movies Display Section -->
         <section class="movies-section">
             <div class="section-header">
                 <h2 class="section-title">
@@ -115,7 +132,6 @@
             </div>
 
             <div id="moviesGrid" class="movies-grid">
-                <!-- Movies will be loaded here -->
             </div>
 
             <div id="noResults" class="no-results" style="display: none;">
@@ -126,7 +142,6 @@
         </section>
     </main>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
@@ -134,22 +149,25 @@
                 <p data-i18n="footerTagline">Ваш проводник в мир кино</p>
             </div>
             <div class="footer-section">
-                <h4 data-i18n="footerAbout">О проекте</h4>
-                <p data-i18n="footerProject">Курсовая работа 2026</p>
-                <p data-i18n="footerDev">Веб-разработка</p>
-            </div>
-            <div class="footer-section">
                 <h4 data-i18n="footerTech">Технологии</h4>
                 <p>HTML5 • CSS3 • JavaScript</p>
                 <p>Firebase • OMDb API • TMDb API</p>
             </div>
         </div>
+
         <div class="footer-bottom">
-            <p data-i18n="footerCopyright">© 2026 Кинопортал. Все права защищены.</p>
+            <p>
+                <span data-i18n="footerCopyright">© 2026 Кинопортал. Все права защищены.</span>
+                <br>
+                <span
+                    style="font-size: 0.85rem; color: var(--text-secondary); opacity: 0.8; letter-spacing: 1px; margin-top: 5px; display: inline-block;">
+                    Developed & Designed by <strong style="color: var(--primary-color); font-weight: 700;">Youssef
+                        Ehab</strong>
+                </span>
+            </p>
         </div>
     </footer>
 
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
@@ -172,49 +190,94 @@
         console.log('%c✅ Firebase подключён!', 'color: #4CAF50; font-size: 16px; font-weight: bold;');
 
         // ============================================
-        // Helper Functions
+        // Helper Functions (الوظائف الحقيقية للأزرار)
         // ============================================
         function scrollToSearch() {
             document.getElementById('searchSection').scrollIntoView({ behavior: 'smooth' });
+            setTimeout(() => {
+                const searchInput = document.getElementById('movieSearchInput');
+                if (searchInput) searchInput.focus();
+            }, 500);
         }
 
         function loadRandomMovie() {
-            const titles = [
-                "Inception", "Matrix", "Interstellar",
-                "Joker", "Avatar", "Titanic", "Gladiator"
-            ];
-            const input = document.getElementById('movieSearchInput');
-            if (input) {
-                input.value = titles[Math.floor(Math.random() * titles.length)];
-                handleSearch();
-                scrollToSearch();
+            // النزول لقسم الكروت
+            document.getElementById('moviesGrid').scrollIntoView({ behavior: 'smooth' });
+            const movieCards = document.querySelectorAll('.movie-card');
+
+            if (movieCards.length > 0) {
+                // إخفاء كل الأفلام
+                movieCards.forEach(card => {
+                    card.style.display = 'none';
+                    card.classList.remove('fade-in');
+                });
+
+                // إظهار فيلم واحد عشوائي
+                const randomIndex = Math.floor(Math.random() * movieCards.length);
+                movieCards[randomIndex].style.display = 'flex';
+
+                // تغيير العنوان
+                document.querySelector('.movies-section .section-title span:nth-child(2)').textContent = 'Случайный выбор';
+            } else {
+                // لو مفيش كروت لسه، هيجيب عشوائي باستخدام البحث
+                const titles = ["Inception", "Matrix", "Interstellar", "Joker", "Avatar", "Titanic", "Gladiator"];
+                const input = document.getElementById('movieSearchInput');
+                if (input) {
+                    input.value = titles[Math.floor(Math.random() * titles.length)];
+                    if (typeof handleSearch === 'function') handleSearch();
+                }
             }
         }
 
         function loadTopRated() {
-            const tops = [
-                "The Shawshank Redemption", "The Godfather",
-                "The Dark Knight", "Pulp Fiction"
-            ];
-            const input = document.getElementById('movieSearchInput');
-            if (input) {
-                input.value = tops[Math.floor(Math.random() * tops.length)];
-                handleSearch();
-                scrollToSearch();
+            // النزول لقسم الكروت
+            document.getElementById('moviesGrid').scrollIntoView({ behavior: 'smooth' });
+            const movieCards = document.querySelectorAll('.movie-card');
+            let found = false;
+
+            if (movieCards.length > 0) {
+                movieCards.forEach(card => {
+                    // البحث عن الأرقام في الكارت (التقييم)
+                    const text = card.innerText || "";
+                    const ratingMatch = text.match(/(\d+\.\d+|\b10\b|\b[8-9]\b)/);
+
+                    if (ratingMatch && parseFloat(ratingMatch[0]) >= 8.0) {
+                        card.style.display = 'flex';
+                        found = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // تغيير العنوان
+                document.querySelector('.movies-section .section-title span:nth-child(2)').textContent = 'Топ рейтинг (8.0+)';
+
+                const noRes = document.getElementById('noResults');
+                if (noRes) noRes.style.display = found ? 'none' : 'block';
+            } else {
+                // لو مفيش كروت لسه
+                const tops = ["The Shawshank Redemption", "The Godfather", "The Dark Knight", "Pulp Fiction"];
+                const input = document.getElementById('movieSearchInput');
+                if (input) {
+                    input.value = tops[Math.floor(Math.random() * tops.length)];
+                    if (typeof handleSearch === 'function') handleSearch();
+                }
             }
         }
 
         function changeView(viewType) {
             const grid = document.getElementById('moviesGrid');
             document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.closest('.view-btn').classList.add('active');
+            if (event && event.target) {
+                const btn = event.target.closest('.view-btn');
+                if (btn) btn.classList.add('active');
+            }
             grid.style.gridTemplateColumns = viewType === 'list'
                 ? '1fr'
                 : 'repeat(auto-fill, minmax(300px, 1fr))';
         }
     </script>
 
-    <!-- App Logic -->
     <script src="app.js"></script>
 </body>
 
