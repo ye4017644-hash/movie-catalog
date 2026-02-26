@@ -199,8 +199,9 @@ body::after {
    ============================================ */
 .hero-section {
     min-height: 80vh;
+    /* 🔥 تعديل الـ VPN: سحب الصورة من ملفات الموقع بدل Unsplash المحجوب 🔥 */
     background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(26, 0, 0, 0.9) 100%),
-        url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1920&q=80') center/cover;
+        url('./bg.jpg') center/cover;
     background-blend-mode: overlay;
     display: flex;
     flex-direction: column;
@@ -257,7 +258,7 @@ body.light-mode .hero-title {
     flex-wrap: wrap;
     position: relative;
     z-index: 5;
-    width: 100%; /* ده السطر اللي بيظبط المسافات في الكمبيوتر */
+    width: 100%;
 }
 
 .stat-item {
@@ -274,7 +275,7 @@ body.light-mode .hero-title {
     min-width: 180px;
     transition: 0.4s;
     box-shadow: 0 10px 30px var(--glass-shadow);
-    margin: 0 15px; /* مسافة إجبارية يمين وشمال كل كارت */
+    margin: 0 15px;
 }
 
 .stat-item:hover {
@@ -594,12 +595,13 @@ body.light-mode .hero-title {
     color: white;
 }
 
+/* 🔥 دمج كود Vanya: المسافات والعرض 280 بيكسل للكمبيوتر 🔥 */
 #moviesGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 35px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
     padding: 20px 0;
-    justify-content: center; /* بيوزع الكروت صح وبيمنع التلزيق */
+    justify-content: center;
 }
 
 .movie-card img {
@@ -972,26 +974,22 @@ textarea::placeholder {
 /* ============================================
    تعديلات حصرية لتنظيف الـ Light Mode (الهيرو)
    ============================================ */
-
-/* 1. تفتيح الصورة بشكل نظيف وبدون بهتان في الأطراف */
 body.light-mode .hero-section {
+    /* 🔥 تعديل الـ VPN: سحب الصورة من ملفات الموقع 🔥 */
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.7) 100%),
-        url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1920&q=80') center/cover !important;
+        url('./bg.jpg') center/cover !important;
 }
 
-/* 2. مسح الظل الأسود المبهت اللي كان بيغمق النص من النص */
 body.light-mode .hero-overlay {
     background: transparent !important;
 }
 
-/* 3. تغميق النصوص عشان تبان على الكراسي الفاتحة */
 body.light-mode .hero-subtitle {
     color: #1a1a1a !important;
     text-shadow: 0 1px 5px rgba(255, 255, 255, 0.9) !important;
     font-weight: 500 !important;
 }
 
-/* 4. تغميق سهم النزول ونص "ابدأ البحث" */
 body.light-mode .hero-scroll-indicator {
     color: #1a1a1a !important;
     text-shadow: 0 1px 5px rgba(255, 255, 255, 0.9) !important;
@@ -1011,9 +1009,9 @@ body.light-mode .scroll-arrow {
     .movies-grid, #moviesGrid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
 }
 
-/* شاشات الموبايل (التعديل النهائي للكروت والمسافات والبار العلوي) */
+/* 🔥 دمج كود Vanya مع تعديلاتنا لشاشات الموبايل 🔥 */
 @media screen and (max-width: 768px) {
-    /* 1. تظبيط البار العلوي (تغيير اللغة والوضع الليلي) */
+    /* 1. تظبيط البار العلوي */
     .navbar { padding: 10px 15px !important; }
     .nav-container { flex-direction: row !important; justify-content: space-between !important; align-items: center !important; gap: 5px !important; }
     .nav-brand { font-size: 1rem !important; gap: 5px !important; white-space: nowrap !important; }
@@ -1025,24 +1023,24 @@ body.light-mode .scroll-arrow {
     .lang-btn { font-size: 0.85rem !important; padding: 4px 6px !important; }
     .theme-toggle { font-size: 1rem !important; padding: 5px 8px !important; margin: 0 !important; display: flex !important; }
 
-    /* 2. تظبيط قسم الكروت عشان يجوا جنب بعض بشكل احترافي */
+    /* 2. قسم الهيرو وتصغير العنوان (كود Vanya) */
     .hero-section { min-height: 60vh !important; padding: 100px 10px 30px !important; }
-    .hero-title { font-size: 2rem !important; margin-bottom: 10px !important; }
+    .hero-title { font-size: 1.8em !important; margin-bottom: 10px !important; }
     .hero-subtitle { font-size: 1rem !important; margin-bottom: 25px !important; }
     
-    /* 🔥 الحل السحري للكروت (Grid) 🔥 */
+    /* 🔥 الحل السحري للكروت الإحصائيات (Grid) 🔥 */
     .hero-stats { 
         display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important; /* عمودين بالعافية */
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 15px !important; 
         margin-top: 15px !important; 
         margin-bottom: 60px !important; 
         width: 100% !important; 
-        padding: 0 10px !important; /* مسافة صغيرة من الجناب */
+        padding: 0 10px !important;
     }
     
     .stat-item { 
-        width: 100% !important; /* ياخد عرض الخلية في الـ Grid */
+        width: 100% !important;
         max-width: none !important;
         padding: 15px 10px !important; 
         border-radius: 15px !important;
@@ -1050,61 +1048,58 @@ body.light-mode .scroll-arrow {
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
-        margin: 0 !important; /* منع التعارض مع المارجن بتاع الكمبيوتر */
+        margin: 0 !important;
     }
 
-    /* نخلي الكارت التالت ييجي في النص تحت الكارتين الأولانيين */
     .stat-item:last-child {
-        grid-column: 1 / -1 !important; /* ياخد العرض كله */
-        max-width: 50% !important; /* نصغره عشان ميبقاش عريض أوي */
-        justify-self: center !important; /* نوسطنه */
+        grid-column: 1 / -1 !important;
+        max-width: 50% !important;
+        justify-self: center !important;
     }
 
     .stat-number { font-size: 1.8rem !important; margin: 0 !important; }
     .stat-label { font-size: 0.85rem !important; text-align: center !important; margin: 0 !important; }
 
-    /* 3. تظبيط سهم النزول */
     .hero-scroll-indicator { position: absolute !important; bottom: 15px !important; left: 50% !important; transform: translateX(-50%) !important; }
     .scroll-arrow { font-size: 1.5rem !important; }
 
-    /* 4. تظبيط الفوتر عشان ما يبقاش لازق في بعضه */
+    /* 3. تظبيط الهيدر والزراير لتاخد الشاشة كلها (كود Vanya) */
+    .section-header { flex-direction: column !important; align-items: stretch !important; text-align: center !important; gap: 15px !important; }
+    
+    .quick-actions { flex-direction: column !important; gap: 10px !important; }
+    .quick-btn, #movieSearchBtn, .btn-add { width: 100% !important; justify-content: center !important; }
+    #movieSearchBtn { margin-left: 0 !important; padding: 14px 20px !important; }
+
+    /* 4. تظبيط الجريد بتاع كروت الأفلام ليصبح 240px (كود Vanya) */
+    #moviesGrid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important; gap: 15px !important; }
+
+    /* 5. الفلاتر والبحث (كود Vanya) */
+    .add-movie-section { padding: 25px 15px !important; }
+    .search-box-container { flex-direction: column !important; background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; gap: 10px !important; width: 100% !important; }
+    #movieSearchInput { background: var(--search-bg) !important; border: 1px solid var(--search-border) !important; border-radius: 12px !important; width: 100% !important; padding: 14px 20px !important; }
+    .search-filters { flex-direction: column !important; gap: 10px !important; align-items: center !important; }
+    .filter-chip { width: 100% !important; text-align: center !important; }
+    
+    /* 6. نافذة الإضافة (كود Vanya) */
+    .add-form-container { padding: 25px !important; }
+
+    /* 7. الفوتر */
     .footer { padding: 40px 15px 20px !important; margin-top: 50px !important; }
     .footer-content { flex-direction: column !important; gap: 25px !important; text-align: center !important; }
     .footer-section h3, .footer-section h4 { font-size: 1.2rem !important; margin-bottom: 15px !important; }
     .footer-section p { font-size: 0.9rem !important; margin: 8px 0 !important; }
     .footer-bottom { padding-top: 20px !important; margin-top: 20px !important; border-top: 1px solid rgba(255,255,255,0.1) !important; }
-    
-    /* 5. تظبيط منطقة البحث والأزرار */
-    .add-movie-section { padding: 25px 15px !important; }
-    .search-box-container { flex-direction: column !important; background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; gap: 10px !important; }
-    #movieSearchInput { background: var(--search-bg) !important; border: 1px solid var(--search-border) !important; border-radius: 12px !important; width: 100% !important; padding: 14px 20px !important; }
-    #movieSearchBtn { width: 100% !important; margin-left: 0 !important; padding: 14px 20px !important; }
-    .quick-actions { flex-direction: column !important; gap: 10px !important; }
-    .quick-btn { width: 100% !important; padding: 14px 20px !important; justify-content: center !important; }
 }
 
-/* شاشات الموبايل الصغيرة جداً (مثل iPhone SE) */
+/* شاشات الموبايل الصغيرة جداً */
 @media screen and (max-width: 375px) {
     .hero-title { font-size: 1.6rem !important; }
-    /* نرجع الكروت تحت بعض لو الشاشة أقل من 375 بيكسل */
     .hero-stats { grid-template-columns: 1fr !important; }
     .stat-item:last-child { max-width: 100% !important; }
-    /* إخفاء نص اللوجو عشان الزراير متهربش */
     .logo-text { display: none !important; }
 }
 
 @media (hover: none) and (pointer: coarse) {
-    .quick-btn,
-    .lang-btn,
-    .theme-toggle,
-    .view-btn,
-    #movieSearchBtn,
-    .btn-add {
-        min-height: 44px;
-        min-width: 44px;
-    }
-
-    .movie-card:active {
-        transform: scale(0.98);
-    }
+    .quick-btn, .lang-btn, .theme-toggle, .view-btn, #movieSearchBtn, .btn-add { min-height: 44px; min-width: 44px; }
+    .movie-card:active { transform: scale(0.98); }
 }
