@@ -1,26 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+
 /* ============================================
    1. VARIABLES & THEMES (PREMIUM GLASSMORPHISM)
    ============================================ */
 :root {
     --primary-color: #e50914;
     --primary-hover: #ff0a16;
-
+    
     /* Dark Mode Variables (Default) */
     --bg-base: #050505;
     --text-color: #ffffff;
     --text-secondary: #aaaaaa;
-
+    
     /* Glass Panels */
     --glass-bg: rgba(15, 15, 20, 0.4);
     --glass-border: rgba(255, 255, 255, 0.05);
     --glass-border-light: rgba(255, 255, 255, 0.1);
     --glass-shadow: rgba(0, 0, 0, 0.5);
-
+    
     /* Search Box */
     --search-bg: rgba(0, 0, 0, 0.6);
     --search-border: rgba(255, 255, 255, 0.1);
     --search-shadow-inner: inset 0 2px 10px rgba(0, 0, 0, 0.8);
-
+    
     /* Ambient Glow */
     --glow-1: rgba(229, 9, 20, 0.08);
     --glow-2: rgba(178, 7, 16, 0.06);
@@ -30,16 +32,16 @@ body.light-mode {
     --bg-base: #f5f5f7;
     --text-color: #111111;
     --text-secondary: #555555;
-
+    
     --glass-bg: rgba(255, 255, 255, 0.6);
     --glass-border: rgba(0, 0, 0, 0.05);
     --glass-border-light: rgba(0, 0, 0, 0.1);
     --glass-shadow: rgba(0, 0, 0, 0.05);
-
+    
     --search-bg: rgba(255, 255, 255, 0.8);
     --search-border: rgba(0, 0, 0, 0.1);
     --search-shadow-inner: inset 0 2px 5px rgba(0, 0, 0, 0.05);
-
+    
     --glow-1: rgba(229, 9, 20, 0.04);
     --glow-2: rgba(178, 7, 16, 0.03);
 }
@@ -47,8 +49,6 @@ body.light-mode {
 /* ============================================
    2. GLOBAL STYLES & ANIMATED BACKGROUND
    ============================================ */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
-
 * {
     margin: 0;
     padding: 0;
@@ -74,12 +74,9 @@ body {
 body::before {
     content: "";
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+    top: 0; left: 0; width: 100vw; height: 100vh;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    opacity: 0.03;
+    opacity: 0.03; 
     pointer-events: none;
     z-index: 9999;
 }
@@ -88,11 +85,8 @@ body::before {
 body::after {
     content: "";
     position: fixed;
-    top: -50%;
-    left: -50%;
-    width: 200vw;
-    height: 200vh;
-    background:
+    top: -50%; left: -50%; width: 200vw; height: 200vh;
+    background: 
         radial-gradient(circle at 20% 30%, var(--glow-1) 0%, transparent 40%),
         radial-gradient(circle at 80% 70%, var(--glow-2) 0%, transparent 40%);
     pointer-events: none;
@@ -237,10 +231,6 @@ body::after {
     letter-spacing: 3px;
 }
 
-body.light-mode .hero-title {
-    text-shadow: 0 2px 10px rgba(229, 9, 20, 0.3);
-}
-
 .hero-subtitle {
     font-size: 1.5rem;
     color: #f5f5f5;
@@ -377,9 +367,7 @@ body.light-mode .hero-title {
 /* ============================================
    6. PREMIUM GLASS SECTIONS (Search, Form, Cards)
    ============================================ */
-.add-movie-section,
-.add-form-container,
-.movie-card {
+.add-movie-section, .add-form-container, .movie-card {
     background: var(--glass-bg) !important;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -401,15 +389,6 @@ body.light-mode .hero-title {
     padding: 40px;
     max-width: 900px;
     margin: 40px auto;
-}
-
-#addMovieSection {
-    display: none;
-}
-
-#addMovieSection.admin-mode {
-    display: block;
-    animation: fadeIn 0.5s ease;
 }
 
 .movie-card {
@@ -782,11 +761,19 @@ textarea::placeholder {
     color: var(--primary-color);
 }
 
+/* الحماية السرية لنموذج الإضافة */
+#addMovieSection {
+    display: none; 
+}
+#addMovieSection.admin-mode {
+    display: block;
+    animation: fadeIn 0.5s ease;
+}
+
 /* ============================================
    10. LOADING, ERROR & FOOTER
    ============================================ */
-.loading,
-.error {
+.loading, .error {
     text-align: center;
     padding: 80px 20px;
     font-size: 1.6rem;
@@ -836,8 +823,7 @@ textarea::placeholder {
     margin-bottom: 40px;
 }
 
-.footer-section h3,
-.footer-section h4 {
+.footer-section h3, .footer-section h4 {
     color: var(--primary-color);
     margin-bottom: 20px;
     font-weight: 700;
@@ -861,22 +847,10 @@ textarea::placeholder {
 /* ============================================
    11. SCROLLBAR & CONTROLS (LANG/THEME)
    ============================================ */
-::-webkit-scrollbar {
-    width: 12px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--bg-base);
-}
-
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, var(--primary-color) 0%, #b20710 100%);
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-hover);
-}
+::-webkit-scrollbar { width: 12px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--primary-color) 0%, #b20710 100%); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary-hover); }
 
 .nav-controls {
     display: flex;
@@ -911,9 +885,7 @@ textarea::placeholder {
     color: white;
 }
 
-.lang-btn:hover {
-    opacity: 1;
-}
+.lang-btn:hover { opacity: 1; }
 
 .theme-toggle {
     background: rgba(128, 128, 128, 0.2);
@@ -931,33 +903,16 @@ textarea::placeholder {
 }
 
 /* RTL SUPPORT */
-[dir="rtl"] .nav-container {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .hero-stats {
-    direction: rtl;
-}
-
-[dir="rtl"] .quick-actions {
-    direction: rtl;
-}
-
-[dir="rtl"] .section-header {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .footer-content {
-    direction: rtl;
-}
+[dir="rtl"] .nav-container { flex-direction: row-reverse; }
+[dir="rtl"] .hero-stats { direction: rtl; }
+[dir="rtl"] .quick-actions { direction: rtl; }
+[dir="rtl"] .section-header { flex-direction: row-reverse; }
+[dir="rtl"] .footer-content { direction: rtl; }
 
 /* CUSTOM BADGE */
 .custom-badge {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 20;
+    top: 0; left: 0; right: 0; z-index: 20;
     background: linear-gradient(90deg, #e50914, #b20710);
     color: white;
     padding: 8px 15px;
@@ -970,26 +925,21 @@ textarea::placeholder {
 /* ============================================
    تعديلات حصرية لتنظيف الـ Light Mode (الهيرو)
    ============================================ */
-
-/* 1. تفتيح الصورة بشكل نظيف وبدون بهتان في الأطراف */
 body.light-mode .hero-section {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.7) 100%),
         url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1920&q=80') center/cover !important;
 }
 
-/* 2. مسح الظل الأسود المبهت اللي كان بيغمق النص من النص */
 body.light-mode .hero-overlay {
     background: transparent !important;
 }
 
-/* 3. تغميق النصوص عشان تبان على الكراسي الفاتحة */
 body.light-mode .hero-subtitle {
     color: #1a1a1a !important;
     text-shadow: 0 1px 5px rgba(255, 255, 255, 0.9) !important;
     font-weight: 500 !important;
 }
 
-/* 4. تغميق سهم النزول ونص "ابدأ البحث" */
 body.light-mode .hero-scroll-indicator {
     color: #1a1a1a !important;
     text-shadow: 0 1px 5px rgba(255, 255, 255, 0.9) !important;
@@ -1006,12 +956,13 @@ body.light-mode .scroll-arrow {
     .container { padding: 20px; }
     .hero-title { font-size: 3rem; }
     .hero-subtitle { font-size: 1.2rem; }
+    .hero-stats { gap: 30px; }
     .movies-grid, #moviesGrid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
 }
 
-/* شاشات الموبايل (التعديل النهائي للكروت والمسافات) */
+/* الحل النهائي والمضمون 100% للموبايل (Grid System) */
 @media screen and (max-width: 768px) {
-    /* 1. تظبيط البار العلوي (تغيير اللغة والوضع الليلي) */
+    /* Navbar */
     .navbar { padding: 15px !important; }
     .nav-container { flex-direction: row !important; justify-content: space-between !important; align-items: center !important; gap: 5px !important; }
     .nav-brand { font-size: 1.1rem !important; }
@@ -1020,24 +971,24 @@ body.light-mode .scroll-arrow {
     .nav-controls { gap: 5px !important; flex-direction: row !important; }
     .lang-btn, .theme-toggle { font-size: 1rem !important; padding: 6px 10px !important; margin: 0 !important; }
 
-    /* 2. تظبيط قسم الكروت عشان يجوا جنب بعض بشكل احترافي */
+    /* Hero Section */
     .hero-section { min-height: 60vh !important; padding: 100px 10px 30px !important; }
     .hero-title { font-size: 2rem !important; margin-bottom: 10px !important; }
     .hero-subtitle { font-size: 1rem !important; margin-bottom: 25px !important; }
     
-    /* 🔥 الحل السحري للكروت (Grid) 🔥 */
+    /* Stats Cards - Grid System */
     .hero-stats { 
         display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important; /* عمودين بالعافية */
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 15px !important; 
         margin-top: 15px !important; 
         margin-bottom: 60px !important; 
         width: 100% !important; 
-        padding: 0 10px !important; /* مسافة صغيرة من الجناب */
+        padding: 0 10px !important;
     }
     
     .stat-item { 
-        width: 100% !important; /* ياخد عرض الخلية في الـ Grid */
+        width: 100% !important;
         max-width: none !important;
         padding: 15px 10px !important; 
         border-radius: 15px !important;
@@ -1047,28 +998,27 @@ body.light-mode .scroll-arrow {
         justify-content: center !important;
     }
 
-    /* نخلي الكارت التالت ييجي في النص تحت الكارتين الأولانيين */
     .stat-item:last-child {
-        grid-column: 1 / -1 !important; /* ياخد العرض كله */
-        max-width: 50% !important; /* نصغره عشان ميبقاش عريض أوي */
-        justify-self: center !important; /* نوسطنه */
+        grid-column: 1 / -1 !important;
+        max-width: 50% !important;
+        justify-self: center !important;
     }
-
+    
     .stat-number { font-size: 1.8rem !important; margin: 0 !important; }
     .stat-label { font-size: 0.85rem !important; text-align: center !important; margin: 0 !important; }
 
-    /* 3. تظبيط سهم النزول */
+    /* Scroll Arrow */
     .hero-scroll-indicator { position: absolute !important; bottom: 15px !important; left: 50% !important; transform: translateX(-50%) !important; }
     .scroll-arrow { font-size: 1.5rem !important; }
 
-    /* 4. تظبيط الفوتر عشان ما يبقاش لازق في بعضه */
+    /* Footer */
     .footer { padding: 40px 15px 20px !important; margin-top: 50px !important; }
     .footer-content { flex-direction: column !important; gap: 25px !important; text-align: center !important; }
     .footer-section h3, .footer-section h4 { font-size: 1.2rem !important; margin-bottom: 15px !important; }
     .footer-section p { font-size: 0.9rem !important; margin: 8px 0 !important; }
     .footer-bottom { padding-top: 20px !important; margin-top: 20px !important; border-top: 1px solid rgba(255,255,255,0.1) !important; }
     
-    /* 5. تظبيط منطقة البحث والأزرار */
+    /* Search & Buttons */
     .add-movie-section { padding: 25px 15px !important; }
     .search-box-container { flex-direction: column !important; background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; gap: 10px !important; }
     #movieSearchInput { background: var(--search-bg) !important; border: 1px solid var(--search-border) !important; border-radius: 12px !important; width: 100% !important; padding: 14px 20px !important; }
@@ -1077,26 +1027,6 @@ body.light-mode .scroll-arrow {
     .quick-btn { width: 100% !important; padding: 14px 20px !important; justify-content: center !important; }
 }
 
-/* شاشات الموبايل الصغيرة جداً (مثل iPhone SE) */
 @media screen and (max-width: 375px) {
     .hero-title { font-size: 1.6rem !important; }
-    /* نرجع الكروت تحت بعض لو الشاشة أقل من 375 بيكسل */
-    .hero-stats { grid-template-columns: 1fr !important; }
-    .stat-item:last-child { max-width: 100% !important; }
-}
-
-@media (hover: none) and (pointer: coarse) {
-    .quick-btn,
-    .lang-btn,
-    .theme-toggle,
-    .view-btn,
-    #movieSearchBtn,
-    .btn-add {
-        min-height: 44px;
-        min-width: 44px;
-    }
-
-    .movie-card:active {
-        transform: scale(0.98);
-    }
 }
