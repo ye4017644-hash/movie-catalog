@@ -257,7 +257,7 @@ body.light-mode .hero-title {
     flex-wrap: wrap;
     position: relative;
     z-index: 5;
-    width: 100%; /* ده السطر اللي هيظبط المسافات */
+    width: 100%;
 }
 
 .stat-item {
@@ -274,7 +274,7 @@ body.light-mode .hero-title {
     min-width: 180px;
     transition: 0.4s;
     box-shadow: 0 10px 30px var(--glass-shadow);
-    margin: 0 15px; /* مسافة إجبارية يمين وشمال كل كارت */
+    margin: 0 15px;
 }
 
 .stat-item:hover {
@@ -599,6 +599,7 @@ body.light-mode .hero-title {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 35px;
     padding: 20px 0;
+    justify-content: center; /* السطر ده بيمنع التلزيق ويوزعهم صح */
 }
 
 .movie-card img {
