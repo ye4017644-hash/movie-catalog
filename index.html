@@ -5,11 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎬 Кинопортал - Откройте мир кино</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="./style.css?v=2">
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 
 <body>
@@ -212,25 +215,20 @@
         }
 
         function loadRandomMovie() {
-            // النزول لقسم الكروت
             document.getElementById('moviesGrid').scrollIntoView({ behavior: 'smooth' });
             const movieCards = document.querySelectorAll('.movie-card');
 
             if (movieCards.length > 0) {
-                // إخفاء كل الأفلام
                 movieCards.forEach(card => {
                     card.style.display = 'none';
                     card.classList.remove('fade-in');
                 });
 
-                // إظهار فيلم واحد عشوائي
                 const randomIndex = Math.floor(Math.random() * movieCards.length);
                 movieCards[randomIndex].style.display = 'flex';
 
-                // تغيير العنوان
                 document.querySelector('.movies-section .section-title span:nth-child(2)').textContent = 'Случайный выбор';
             } else {
-                // لو مفيش كروت لسه، هيجيب عشوائي باستخدام البحث
                 const titles = ["Inception", "Matrix", "Interstellar", "Joker", "Avatar", "Titanic", "Gladiator"];
                 const input = document.getElementById('movieSearchInput');
                 if (input) {
@@ -241,14 +239,12 @@
         }
 
         function loadTopRated() {
-            // النزول لقسم الكروت
             document.getElementById('moviesGrid').scrollIntoView({ behavior: 'smooth' });
             const movieCards = document.querySelectorAll('.movie-card');
             let found = false;
 
             if (movieCards.length > 0) {
                 movieCards.forEach(card => {
-                    // البحث عن الأرقام في الكارت (التقييم)
                     const text = card.innerText || "";
                     const ratingMatch = text.match(/(\d+\.\d+|\b10\b|\b[8-9]\b)/);
 
@@ -260,13 +256,11 @@
                     }
                 });
 
-                // تغيير العنوان
                 document.querySelector('.movies-section .section-title span:nth-child(2)').textContent = 'Топ рейтинг (8.0+)';
 
                 const noRes = document.getElementById('noResults');
                 if (noRes) noRes.style.display = found ? 'none' : 'block';
             } else {
-                // لو مفيش كروت لسه
                 const tops = ["The Shawshank Redemption", "The Godfather", "The Dark Knight", "Pulp Fiction"];
                 const input = document.getElementById('movieSearchInput');
                 if (input) {
