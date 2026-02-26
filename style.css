@@ -102,13 +102,8 @@ body::after {
 }
 
 @keyframes slowDrift {
-    0% {
-        transform: translate(0, 0) scale(1);
-    }
-
-    100% {
-        transform: translate(5%, 5%) scale(1.1);
-    }
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(5%, 5%) scale(1.1); }
 }
 
 /* ============================================
@@ -157,19 +152,9 @@ body::after {
 }
 
 @keyframes rotate {
-
-    0%,
-    100% {
-        transform: rotate(0deg);
-    }
-
-    25% {
-        transform: rotate(-5deg);
-    }
-
-    75% {
-        transform: rotate(5deg);
-    }
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
 }
 
 .nav-menu {
@@ -331,27 +316,13 @@ body.light-mode .hero-title {
 }
 
 @keyframes bounce {
-
-    0%,
-    100% {
-        transform: translateY(0) translateX(-50%);
-    }
-
-    50% {
-        transform: translateY(-15px) translateX(-50%);
-    }
+    0%, 100% { transform: translateY(0) translateX(-50%); }
+    50% { transform: translateY(-15px) translateX(-50%); }
 }
 
 @keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(50px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* ============================================
@@ -399,13 +370,8 @@ body.light-mode .hero-title {
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 /* ============================================
@@ -1036,188 +1002,92 @@ body.light-mode .scroll-arrow {
 /* ============================================
    12. RESPONSIVE DESIGN (MOBILE & TABLET)
    ============================================ */
+@media (max-width: 1024px) {
+    .container { padding: 20px; }
+    .hero-title { font-size: 3rem; }
+    .hero-subtitle { font-size: 1.2rem; }
+    .hero-stats { gap: 30px; }
+    .movies-grid, #moviesGrid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+}
 
 /* شاشات الموبايل (التعديل النهائي للكروت والمسافات) */
 @media screen and (max-width: 768px) {
-
     /* 1. تظبيط البار العلوي (تغيير اللغة والوضع الليلي) */
-    .navbar {
-        padding: 15px !important;
-    }
-
-    .nav-container {
-        flex-direction: row !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        gap: 5px !important;
-    }
-
-    .nav-brand {
-        font-size: 1.1rem !important;
-    }
-
-    .logo-icon {
-        font-size: 1.5rem !important;
-    }
-
-    .nav-menu {
-        display: none !important;
-    }
-
-    .nav-controls {
-        gap: 5px !important;
-        flex-direction: row !important;
-    }
-
-    .lang-btn,
-    .theme-toggle {
-        font-size: 1rem !important;
-        padding: 6px 10px !important;
-        margin: 0 !important;
-    }
+    .navbar { padding: 15px !important; }
+    .nav-container { flex-direction: row !important; justify-content: space-between !important; align-items: center !important; gap: 5px !important; }
+    .nav-brand { font-size: 1.1rem !important; }
+    .logo-icon { font-size: 1.5rem !important; }
+    .nav-menu { display: none !important; }
+    .nav-controls { gap: 5px !important; flex-direction: row !important; }
+    .lang-btn, .theme-toggle { font-size: 1rem !important; padding: 6px 10px !important; margin: 0 !important; }
 
     /* 2. تظبيط قسم الكروت عشان يجوا جنب بعض بشكل احترافي */
-    .hero-section {
-        min-height: 60vh !important;
-        padding: 100px 10px 30px !important;
-    }
-
-    .hero-title {
-        font-size: 2rem !important;
-        margin-bottom: 10px !important;
-    }
-
-    .hero-subtitle {
-        font-size: 1rem !important;
-        margin-bottom: 25px !important;
-    }
-
-    .hero-stats {
-        flex-direction: row !important;
-        /* يخليهم جنب بعض إجباري */
+    .hero-section { min-height: 60vh !important; padding: 100px 10px 30px !important; }
+    .hero-title { font-size: 2rem !important; margin-bottom: 10px !important; }
+    .hero-subtitle { font-size: 1rem !important; margin-bottom: 25px !important; }
+    
+    /* 🔥 الحل السحري للكروت هنا 🔥 */
+    .hero-stats { 
+        display: flex !important;
+        flex-direction: row !important; /* يجبرهم يكونوا جنب بعض */
         flex-wrap: wrap !important;
-        /* لو الشاشة صغيرة أوي ينزلهم بانتظام */
         justify-content: center !important;
-        align-items: stretch !important;
-        gap: 12px !important;
-        margin-top: 15px !important;
-        margin-bottom: 60px !important;
-        width: 100% !important;
+        gap: 10px !important; 
+        margin-top: 15px !important; 
+        margin-bottom: 60px !important; 
+        width: 100% !important; 
     }
-
-    .stat-item {
-        width: 45% !important;
-        /* مقاس الكارت عشان ياخد نص الشاشة بالضبط */
-        max-width: 150px !important;
-        padding: 15px 10px !important;
+    .stat-item { 
+        width: calc(50% - 10px) !important; /* يخليهم ياخدوا نص الشاشة بالضبط ناقص المسافة */
+        max-width: none !important; /* يلغي أي مقاس قديم */
+        padding: 15px 10px !important; 
         border-radius: 15px !important;
         display: flex !important;
         flex-direction: column !important;
+        align-items: center !important;
         justify-content: center !important;
     }
-
-    .stat-number {
-        font-size: 1.8rem !important;
-        margin: 0 !important;
-    }
-
-    .stat-label {
-        font-size: 0.85rem !important;
-        text-align: center !important;
-        margin: 0 !important;
-    }
+    .stat-number { font-size: 1.8rem !important; margin: 0 !important; }
+    .stat-label { font-size: 0.85rem !important; text-align: center !important; margin: 0 !important; }
 
     /* 3. تظبيط سهم النزول */
-    .hero-scroll-indicator {
-        position: absolute !important;
-        bottom: 15px !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-    }
-
-    .scroll-arrow {
-        font-size: 1.5rem !important;
-    }
+    .hero-scroll-indicator { position: absolute !important; bottom: 15px !important; left: 50% !important; transform: translateX(-50%) !important; }
+    .scroll-arrow { font-size: 1.5rem !important; }
 
     /* 4. تظبيط الفوتر عشان ما يبقاش لازق في بعضه */
-    .footer {
-        padding: 40px 15px 20px !important;
-        margin-top: 50px !important;
-    }
-
-    .footer-content {
-        flex-direction: column !important;
-        gap: 25px !important;
-        text-align: center !important;
-    }
-
-    .footer-section h3,
-    .footer-section h4 {
-        font-size: 1.2rem !important;
-        margin-bottom: 15px !important;
-    }
-
-    .footer-section p {
-        font-size: 0.9rem !important;
-        margin: 8px 0 !important;
-    }
-
-    .footer-bottom {
-        padding-top: 20px !important;
-        margin-top: 20px !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-    }
-
+    .footer { padding: 40px 15px 20px !important; margin-top: 50px !important; }
+    .footer-content { flex-direction: column !important; gap: 25px !important; text-align: center !important; }
+    .footer-section h3, .footer-section h4 { font-size: 1.2rem !important; margin-bottom: 15px !important; }
+    .footer-section p { font-size: 0.9rem !important; margin: 8px 0 !important; }
+    .footer-bottom { padding-top: 20px !important; margin-top: 20px !important; border-top: 1px solid rgba(255,255,255,0.1) !important; }
+    
     /* 5. تظبيط منطقة البحث والأزرار */
-    .add-movie-section {
-        padding: 25px 15px !important;
-    }
-
-    .search-box-container {
-        flex-direction: column !important;
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-        gap: 10px !important;
-    }
-
-    #movieSearchInput {
-        background: var(--search-bg) !important;
-        border: 1px solid var(--search-border) !important;
-        border-radius: 12px !important;
-        width: 100% !important;
-        padding: 14px 20px !important;
-    }
-
-    #movieSearchBtn {
-        width: 100% !important;
-        margin-left: 0 !important;
-        padding: 14px 20px !important;
-    }
-
-    .quick-actions {
-        flex-direction: column !important;
-        gap: 10px !important;
-    }
-
-    .quick-btn {
-        width: 100% !important;
-        padding: 14px 20px !important;
-        justify-content: center !important;
-    }
+    .add-movie-section { padding: 25px 15px !important; }
+    .search-box-container { flex-direction: column !important; background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; gap: 10px !important; }
+    #movieSearchInput { background: var(--search-bg) !important; border: 1px solid var(--search-border) !important; border-radius: 12px !important; width: 100% !important; padding: 14px 20px !important; }
+    #movieSearchBtn { width: 100% !important; margin-left: 0 !important; padding: 14px 20px !important; }
+    .quick-actions { flex-direction: column !important; gap: 10px !important; }
+    .quick-btn { width: 100% !important; padding: 14px 20px !important; justify-content: center !important; }
 }
 
 /* شاشات الموبايل الصغيرة جداً (مثل iPhone SE) */
 @media screen and (max-width: 375px) {
-    .hero-title {
-        font-size: 1.6rem !important;
+    .hero-title { font-size: 1.6rem !important; }
+    .stat-item { width: 100% !important; max-width: 250px !important; } /* نخليهم تحت بعض عشان الشاشة ضيقة جداً */
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .quick-btn,
+    .lang-btn,
+    .theme-toggle,
+    .view-btn,
+    #movieSearchBtn,
+    .btn-add {
+        min-height: 44px;
+        min-width: 44px;
     }
 
-    .stat-item {
-        width: 100% !important;
-        max-width: 250px !important;
+    .movie-card:active {
+        transform: scale(0.98);
     }
-
-    /* نخليهم تحت بعض عشان الشاشة ضيقة جداً */
 }
