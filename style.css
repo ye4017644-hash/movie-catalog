@@ -1006,7 +1006,6 @@ body.light-mode .scroll-arrow {
     .container { padding: 20px; }
     .hero-title { font-size: 3rem; }
     .hero-subtitle { font-size: 1.2rem; }
-    .hero-stats { gap: 30px; }
     .movies-grid, #moviesGrid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
 }
 
@@ -1026,20 +1025,20 @@ body.light-mode .scroll-arrow {
     .hero-title { font-size: 2rem !important; margin-bottom: 10px !important; }
     .hero-subtitle { font-size: 1rem !important; margin-bottom: 25px !important; }
     
-    /* 🔥 الحل السحري للكروت هنا 🔥 */
+    /* 🔥 الحل السحري للكروت (Grid) 🔥 */
     .hero-stats { 
-        display: flex !important;
-        flex-direction: row !important; /* يجبرهم يكونوا جنب بعض */
-        flex-wrap: wrap !important;
-        justify-content: center !important;
-        gap: 10px !important; 
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important; /* عمودين بالعافية */
+        gap: 15px !important; 
         margin-top: 15px !important; 
         margin-bottom: 60px !important; 
         width: 100% !important; 
+        padding: 0 10px !important; /* مسافة صغيرة من الجناب */
     }
+    
     .stat-item { 
-        width: calc(50% - 10px) !important; /* يخليهم ياخدوا نص الشاشة بالضبط ناقص المسافة */
-        max-width: none !important; /* يلغي أي مقاس قديم */
+        width: 100% !important; /* ياخد عرض الخلية في الـ Grid */
+        max-width: none !important;
         padding: 15px 10px !important; 
         border-radius: 15px !important;
         display: flex !important;
@@ -1047,6 +1046,14 @@ body.light-mode .scroll-arrow {
         align-items: center !important;
         justify-content: center !important;
     }
+
+    /* نخلي الكارت التالت ييجي في النص تحت الكارتين الأولانيين */
+    .stat-item:last-child {
+        grid-column: 1 / -1 !important; /* ياخد العرض كله */
+        max-width: 50% !important; /* نصغره عشان ميبقاش عريض أوي */
+        justify-self: center !important; /* نوسطنه */
+    }
+
     .stat-number { font-size: 1.8rem !important; margin: 0 !important; }
     .stat-label { font-size: 0.85rem !important; text-align: center !important; margin: 0 !important; }
 
@@ -1073,7 +1080,9 @@ body.light-mode .scroll-arrow {
 /* شاشات الموبايل الصغيرة جداً (مثل iPhone SE) */
 @media screen and (max-width: 375px) {
     .hero-title { font-size: 1.6rem !important; }
-    .stat-item { width: 100% !important; max-width: 250px !important; } /* نخليهم تحت بعض عشان الشاشة ضيقة جداً */
+    /* نرجع الكروت تحت بعض لو الشاشة أقل من 375 بيكسل */
+    .hero-stats { grid-template-columns: 1fr !important; }
+    .stat-item:last-child { max-width: 100% !important; }
 }
 
 @media (hover: none) and (pointer: coarse) {
