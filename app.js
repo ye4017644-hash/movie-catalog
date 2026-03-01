@@ -328,7 +328,6 @@ function setupAddMovieForm() {
 // إضافة فيلم - الترجمة والجلب التلقائي (النسخة الآمنة ✅)
 // ============================================
 async function addCustomMovie() {
-    // استخدمنا الـ Optional Chaining للقيم المطلوبة من الـ DOM
     const title = document.getElementById('newMovieTitle')?.value?.trim() || "";
     const year = document.getElementById('newMovieYear')?.value?.trim() || "";
     const genre = document.getElementById('newMovieGenre')?.value?.trim() || "";
@@ -349,14 +348,12 @@ async function addCustomMovie() {
         addBtn.innerHTML = '⏳ جاري الإضافة والترجمة...';
     }
 
-    // المتغيرات اللي هتتحفظ
     let ruTitle = title;
     let arTitle = title;
     let ruDesc = userDesc; 
     let arDesc = userDesc; 
 
     try {
-        // جلب الداتا بالروسي
         const resRu = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=ru-RU`);
         const dataRu = await resRu.json();
         if (dataRu.results?.length > 0) {
@@ -368,7 +365,6 @@ async function addCustomMovie() {
             }
         }
 
-        // جلب الداتا بالعربي
         const resAr = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=ar-AE`);
         const dataAr = await resAr.json();
         if (dataAr.results?.length > 0) {
@@ -376,7 +372,6 @@ async function addCustomMovie() {
             if (!userDesc) arDesc = dataAr.results[0].overview || '';
         }
 
-        // لو ملقاش بوستر يجيب من OMDb
         if (!poster) {
             const omdbRes = await fetch(`${OMDB_API_URL}?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`);
             const omdbData = await omdbRes.json();
@@ -464,7 +459,6 @@ async function handleSearch() {
         snapshot.forEach(doc => {
             const data = doc.data();
             
-            // إضافة الحماية لبيانات الـ Title عشان ما تضربش undefined
             const safeTitle = data.title?.toLowerCase() || "";
             const safeTitleRu = data.title_ru?.toLowerCase() || "";
             const safeTitleAr = data.title_ar?.toLowerCase() || "";
@@ -551,7 +545,7 @@ async function refreshPosterOnError(imgEl, encodedTitle, docId) {
 }
 
 // ============================================
-// كارت الفيلم (بحل مشكلة الوصف الفاضي والترجمة) 
+// كارت الفيلم (بحل مشكلة الوصف الفاضي والترجمة وتصليح الرابط القديم) ✅
 // ============================================
 function createMovieCard(movie) {
     const card = document.createElement('div');
@@ -572,8 +566,15 @@ function createMovieCard(movie) {
     const year = movie.year;
     const genre = movie.genre;
     const rating = movie.rating;
-    const poster = movie.poster;
+    let poster = movie.poster; // خليناها let عشان نقدر نعدلها
     const isRu = movie.country === 'RU';
+
+    // 🔥 التعديل السحري لتصليح الروابط القديمة من الداتابيز في الهواء
+    if (poster && poster.includes('tmdb.de.anuok.ru')) {
+        poster = poster.replace('https://tmdb.de.anuok.ru/t/p/w500', 'https://wsrv.nl/?url=image.tmdb.org/t/p/w500');
+        // تحديث صامت في الداتابيز عشان تتصلح للأبد
+        db.collection('movies').doc(movie.id).update({ poster: poster }).catch(() => console.log('Silent update done'));
+    }
 
     const hasPoster = poster && poster !== 'N/A' && poster !== '';
     const gradientBg = currentTheme === 'dark'
@@ -794,7 +795,6 @@ function openEditModal(docId) {
     });
 
     document.getElementById('saveEditBtn').addEventListener('click', async () => {
-        // حماية لحقول الإدخال في الـ Edit
         const title = document.getElementById('editTitle')?.value?.trim() || "";
         const year = document.getElementById('editYear')?.value?.trim() || "";
         const genre = document.getElementById('editGenre')?.value?.trim() || "";
@@ -1045,11 +1045,9 @@ function filterByGenre(genre) {
         return;
     }
 
-    // إضافة الحماية لاسم الـ Genre
     const safeGenre = genre?.toLowerCase() || "";
 
     cards.forEach(card => {
-        // إضافة الحماية للمحتوى الداخلي للكارت
         const cardText = card.innerText?.toLowerCase() || "";
 
         if (cardText.includes(safeGenre)) {
@@ -1105,7 +1103,6 @@ let secretKey = "";
 const adminPassword = "elaraby"; 
 
 document.addEventListener('keydown', function (e) {
-    // التعديل السحري للـ key events تحسباً لأي خطأ
     secretKey += e.key?.toLowerCase() || "";
 
     if (secretKey.length > adminPassword.length) {
