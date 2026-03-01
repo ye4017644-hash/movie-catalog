@@ -5,14 +5,9 @@ const OMDB_API_KEY = '7fa8063c';
 const OMDB_API_URL = 'https://www.omdbapi.com/';
 const TMDB_API_KEY = '8265bd1679663a7ea12ac168da84d2e8';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-const TMDB_IMAGE_URL = 'https://tmdb.de.anuok.ru/t/p/w500';
 
-// 🔥 دالة سحرية لفك حظر الصور في روسيا (Image Proxy) 🔥
-function getProxyUrl(url) {
-    if (!url || url === 'N/A') return '';
-    // بنستخدم weserv.nl كبروكسي لكسر حظر الصور
-    return `https://images.weserv.nl/?url=${encodeURIComponent(url)}`;
-}
+// التعديل السحري عشان الصور تفتح في روسيا من غير VPN 
+const TMDB_IMAGE_URL = 'https://tmdb.de.anuok.ru/t/p/w500';
 
 const originalWarn = console.warn;
 console.warn = function (...args) {
@@ -160,7 +155,7 @@ function initializeLanguage() {
 }
 
 function switchLanguage(lang) {
-    if (currentLang === lang) return; // منع التكرار
+    if (currentLang === lang) return; 
     currentLang = lang;
     localStorage.setItem('language', lang);
 
@@ -174,7 +169,7 @@ function switchLanguage(lang) {
     applyTranslations();
     setupSearchInterface();
     setupAddMovieForm();
-    loadAllMovies(); // إعادة ريندر الكروت لتغيير اللغة فوراً
+    loadAllMovies(); 
 }
 
 function applyTranslations() {
@@ -330,13 +325,13 @@ function setupAddMovieForm() {
 }
 
 // ============================================
-// إضافة فيلم - الترجمة والجلب التلقائي (النسخة النهائية الذكية) ✅
+// إضافة فيلم - الترجمة والجلب التلقائي 
 // ============================================
 async function addCustomMovie() {
     const title = document.getElementById('newMovieTitle').value.trim();
     const year = document.getElementById('newMovieYear').value.trim();
     const genre = document.getElementById('newMovieGenre').value.trim();
-    const userDesc = document.getElementById('newMovieDesc').value.trim();
+    const userDesc = document.getElementById('newMovieDesc').value.trim(); 
     const rating = document.getElementById('newMovieRating').value.trim();
     const director = document.getElementById('newMovieDirector').value.trim();
     const country = document.getElementById('newMovieCountry').value;
@@ -353,8 +348,8 @@ async function addCustomMovie() {
 
     let ruTitle = title;
     let arTitle = title;
-    let ruDesc = userDesc;
-    let arDesc = userDesc;
+    let ruDesc = userDesc; 
+    let arDesc = userDesc; 
 
     try {
         const resRu = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=ru-RU`);
@@ -364,8 +359,7 @@ async function addCustomMovie() {
             if (!userDesc) ruDesc = dataRu.results[0].overview || '';
 
             if (!poster && dataRu.results[0].poster_path) {
-                // 🔥 استخدام البروكسي هنا 🔥
-                poster = getProxyUrl(`${TMDB_IMAGE_URL}${dataRu.results[0].poster_path}`);
+                poster = `${TMDB_IMAGE_URL}${dataRu.results[0].poster_path}`;
             }
         }
 
@@ -379,8 +373,7 @@ async function addCustomMovie() {
         if (!poster) {
             const omdbRes = await fetch(`${OMDB_API_URL}?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`);
             const omdbData = await omdbRes.json();
-            // 🔥 استخدام البروكسي هنا برضو 🔥
-            if (omdbData.Poster && omdbData.Poster !== 'N/A') poster = getProxyUrl(omdbData.Poster);
+            if (omdbData.Poster && omdbData.Poster !== 'N/A') poster = omdbData.Poster;
         }
     } catch (e) {
         console.log('Auto fetch failed:', e);
@@ -442,14 +435,17 @@ async function loadAllMovies() {
 }
 
 // ============================================
-// البحث في Firestore
+// البحث في Firestore مع الحماية من أخطاء النص ✅
 // ============================================
 async function handleSearch() {
-    const query = document.getElementById('movieSearchInput')?.value.trim();
-    if (!query) {
+    const rawQuery = document.getElementById('movieSearchInput')?.value.trim();
+    if (!rawQuery) {
         showNotification(translations[currentLang].enterTitle, 'warning');
         return;
     }
+    
+    // التعديل السحري لحماية البحث
+    const safeQuery = rawQuery?.toLowerCase() || "";
 
     showLoadingMessage(translations[currentLang].searching);
 
@@ -459,10 +455,16 @@ async function handleSearch() {
 
         snapshot.forEach(doc => {
             const data = doc.data();
+            
+            // التأكد من أن جميع الحقول موجودة قبل تطبيق toLowerCase()
+            const safeTitle = data.title?.toLowerCase() || "";
+            const safeTitleRu = data.title_ru?.toLowerCase() || "";
+            const safeTitleAr = data.title_ar?.toLowerCase() || "";
+
             if (
-                data.title?.toLowerCase().includes(query.toLowerCase()) ||
-                data.title_ru?.toLowerCase().includes(query.toLowerCase()) ||
-                data.title_ar?.toLowerCase().includes(query.toLowerCase())
+                safeTitle.includes(safeQuery) ||
+                safeTitleRu.includes(safeQuery) ||
+                safeTitleAr.includes(safeQuery)
             ) {
                 results.push({ id: doc.id, ...data, isCustom: true });
             }
@@ -508,14 +510,14 @@ async function refreshPosterOnError(imgEl, encodedTitle, docId) {
         const res1 = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=ru-RU`);
         const data1 = await res1.json();
         if (data1.results?.[0]?.poster_path) {
-            newPoster = getProxyUrl(`${TMDB_IMAGE_URL}${data1.results[0].poster_path}`);
+            newPoster = `${TMDB_IMAGE_URL}${data1.results[0].poster_path}`;
         }
 
         if (!newPoster) {
             const res2 = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=en-US`);
             const data2 = await res2.json();
             if (data2.results?.[0]?.poster_path) {
-                newPoster = getProxyUrl(`${TMDB_IMAGE_URL}${data2.results[0].poster_path}`);
+                newPoster = `${TMDB_IMAGE_URL}${data2.results[0].poster_path}`;
             }
         }
 
@@ -523,7 +525,7 @@ async function refreshPosterOnError(imgEl, encodedTitle, docId) {
             const res3 = await fetch(`${OMDB_API_URL}?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`);
             const data3 = await res3.json();
             if (data3.Poster && data3.Poster !== 'N/A') {
-                newPoster = getProxyUrl(data3.Poster);
+                newPoster = data3.Poster;
             }
         }
 
@@ -541,7 +543,7 @@ async function refreshPosterOnError(imgEl, encodedTitle, docId) {
 }
 
 // ============================================
-// كارت الفيلم (بحل مشكلة الوصف الفاضي والترجمة) ✅
+// كارت الفيلم 
 // ============================================
 function createMovieCard(movie) {
     const card = document.createElement('div');
@@ -562,13 +564,8 @@ function createMovieCard(movie) {
     const year = movie.year;
     const genre = movie.genre;
     const rating = movie.rating;
+    const poster = movie.poster;
     const isRu = movie.country === 'RU';
-
-    // 🔥 تمرير البوستر المحفوظ للبروكسي لو مكنش متمرر قبل كده 🔥
-    let poster = movie.poster;
-    if (poster && !poster.includes('images.weserv.nl')) {
-         poster = getProxyUrl(poster);
-    }
 
     const hasPoster = poster && poster !== 'N/A' && poster !== '';
     const gradientBg = currentTheme === 'dark'
@@ -666,7 +663,7 @@ function createMovieCard(movie) {
 }
 
 // ============================================
-// Modal التعديل ✅
+// Modal التعديل 
 // ============================================
 function openEditModal(docId) {
     const oldModal = document.getElementById('editModal');
@@ -865,72 +862,19 @@ function clearForm() {
 // التنقل
 // ============================================
 function scrollToSearch() {
-    const searchSection = document.getElementById('searchSection');
-    if (searchSection) {
-        searchSection.scrollIntoView({ behavior: 'smooth' });
-        setTimeout(() => {
-            const searchInput = document.getElementById('movieSearchInput');
-            if (searchInput) searchInput.focus();
-        }, 800);
-    }
+    document.getElementById('searchSection')?.scrollIntoView({ behavior: 'smooth' });
 }
 
 function loadRandomMovie() {
-    const grid = document.getElementById('moviesGrid');
-    const cards = document.querySelectorAll('.movie-card');
-
-    if (cards.length > 0) {
-        grid.scrollIntoView({ behavior: 'smooth' });
-
-        cards.forEach(card => {
-            card.style.display = 'none';
-        });
-
-        const random = Math.floor(Math.random() * cards.length);
-        cards[random].style.display = 'flex';
-
-        const currentLang = getCurrentLanguage();
-        const titleText = currentLang === 'ar' ? 'اخترنا لك عشوائياً' : 'Случайный выбор';
-
-        const title = document.querySelector('.movies-section .section-title');
-        if (title) {
-            title.innerHTML = `<span class="title-icon">🎲</span> <span>${titleText}</span>`;
-        }
-    } else {
-        scrollToSearch();
-    }
+    showNotification('🎲 تحميل...', 'success');
+    loadAllMovies();
+    scrollToSearch();
 }
 
 function loadTopRated() {
-    const grid = document.getElementById('moviesGrid');
-    const cards = document.querySelectorAll('.movie-card');
-
-    if (cards.length > 0) {
-        grid.scrollIntoView({ behavior: 'smooth' });
-        let count = 0;
-
-        cards.forEach(card => {
-            const text = card.innerText || "";
-            const rating = text.match(/(\d+\.\d+)|\b10\b|\b[8-9]\b/);
-
-            if (rating && parseFloat(rating[0]) >= 8.0) {
-                card.style.display = 'flex';
-                count++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-
-        const currentLang = getCurrentLanguage();
-        const titleText = currentLang === 'ar' ? `الأعلى تقييماً (${count})` : `Топ рейтинг (${count})`;
-
-        const title = document.querySelector('.movies-section .section-title');
-        if (title) {
-            title.innerHTML = `<span class="title-icon">🏆</span> <span>${titleText}</span>`;
-        }
-    } else {
-        scrollToSearch();
-    }
+    showNotification('🏆 تحميل...', 'success');
+    loadAllMovies();
+    scrollToSearch();
 }
 
 function changeView(viewType) {
@@ -993,7 +937,81 @@ function getCurrentLanguage() {
     return htmlLang === 'ar' ? 'ar' : 'ru';
 }
 
-// 🎬 دالة الفلترة بالنوع (Genre Filter) - منفصلة عن البحث
+// 1. وظيفة النزول للبحث والتركيز عليه
+function scrollToSearch() {
+    const searchSection = document.getElementById('searchSection');
+    if (searchSection) {
+        searchSection.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => {
+            const searchInput = document.getElementById('movieSearchInput');
+            if (searchInput) searchInput.focus();
+        }, 800);
+    }
+}
+
+// 2. وظيفة الفيلم العشوائي
+function loadRandomMovie() {
+    const grid = document.getElementById('moviesGrid');
+    const cards = document.querySelectorAll('.movie-card');
+
+    if (cards.length > 0) {
+        grid.scrollIntoView({ behavior: 'smooth' });
+
+        cards.forEach(card => {
+            card.style.display = 'none';
+        });
+
+        const random = Math.floor(Math.random() * cards.length);
+        cards[random].style.display = 'flex';
+
+        const currentLang = getCurrentLanguage();
+        const titleText = currentLang === 'ar' ? 'اخترنا لك عشوائياً' : 'Случайный выбор';
+
+        const title = document.querySelector('.movies-section .section-title');
+        if (title) {
+            title.innerHTML = `<span class="title-icon">🎲</span> <span>${titleText}</span>`;
+        }
+    } else {
+        scrollToSearch();
+    }
+}
+
+// 3. وظيفة الأعلى تقييماً
+function loadTopRated() {
+    const grid = document.getElementById('moviesGrid');
+    const cards = document.querySelectorAll('.movie-card');
+
+    if (cards.length > 0) {
+        grid.scrollIntoView({ behavior: 'smooth' });
+        let count = 0;
+
+        cards.forEach(card => {
+            const text = card.innerText || "";
+            const rating = text.match(/(\d+\.\d+)|\b10\b|\b[8-9]\b/);
+
+            if (rating && parseFloat(rating[0]) >= 8.0) {
+                card.style.display = 'flex';
+                count++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        const currentLang = getCurrentLanguage();
+        const titleText = currentLang === 'ar' ? `الأعلى تقييماً (${count})` : `Топ рейтинг (${count})`;
+
+        const title = document.querySelector('.movies-section .section-title');
+        if (title) {
+            title.innerHTML = `<span class="title-icon">🏆</span> <span>${titleText}</span>`;
+        }
+    } else {
+        scrollToSearch();
+    }
+}
+
+// =================================================
+// 🎬 دالة الفلترة بالنوع (Genre Filter) مع الحماية من أخطاء النص ✅
+// =================================================
 function filterByGenre(genre) {
     const cards = document.querySelectorAll('.movie-card');
     const grid = document.getElementById('moviesGrid');
@@ -1009,11 +1027,13 @@ function filterByGenre(genre) {
         return;
     }
 
-    cards.forEach(card => {
-        const cardText = card.innerText.toLowerCase();
-        const genreLower = genre.toLowerCase();
+    // التعديل السحري هنا برضه
+    const safeGenre = genre?.toLowerCase() || "";
 
-        if (cardText.includes(genreLower)) {
+    cards.forEach(card => {
+        const cardText = card.innerText?.toLowerCase() || "";
+
+        if (cardText.includes(safeGenre)) {
             card.style.display = 'flex';
             count++;
         } else {
@@ -1036,7 +1056,9 @@ function filterByGenre(genre) {
     grid.scrollIntoView({ behavior: 'smooth' });
 }
 
+// =================================================
 // دالة إعادة عرض كل الأفلام (Reset) مع النزول تحت
+// =================================================
 function showAllMovies() {
     const grid = document.getElementById('moviesGrid');
     const cards = document.querySelectorAll('.movie-card');
@@ -1058,13 +1080,14 @@ function showAllMovies() {
 }
 
 // =================================================
-// 🔒 نظام الحماية السري (Admin Access Only)
+// 🔒 نظام الحماية السري (Admin Access Only) مع الحماية ✅
 // =================================================
 let secretKey = "";
-const adminPassword = "elaraby";
+const adminPassword = "elaraby"; 
 
 document.addEventListener('keydown', function (e) {
-    secretKey += e.key.toLowerCase();
+    // التعديل السحري للـ key events 
+    secretKey += e.key?.toLowerCase() || "";
 
     if (secretKey.length > adminPassword.length) {
         secretKey = secretKey.slice(-adminPassword.length);
@@ -1074,9 +1097,11 @@ document.addEventListener('keydown', function (e) {
         const formSection = document.getElementById('addMovieSection');
         if (formSection) {
             formSection.classList.add('admin-mode');
+
             alert(getCurrentLanguage() === 'ar'
                 ? "مرحباً يا يوسف! تم تفعيل وضع المسؤول. يمكنك الآن إضافة أفلام."
                 : "Добро пожаловать, Юссеф! Режим администратора активирован.");
+
             formSection.scrollIntoView({ behavior: 'smooth' });
         }
         secretKey = ""; 
