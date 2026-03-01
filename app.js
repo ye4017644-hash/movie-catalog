@@ -7,6 +7,7 @@ const TMDB_API_KEY = '8265bd1679663a7ea12ac168da84d2e8';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
 // التعديل السحري عشان الصور تفتح في روسيا من غير VPN 
+// (تم استبدال الرابط الأساسي برابط البروكسي)
 const TMDB_IMAGE_URL = 'https://tmdb.de.anuok.ru/t/p/w500';
 
 const originalWarn = console.warn;
@@ -325,17 +326,18 @@ function setupAddMovieForm() {
 }
 
 // ============================================
-// إضافة فيلم - الترجمة والجلب التلقائي 
+// إضافة فيلم - الترجمة والجلب التلقائي (النسخة الآمنة ✅)
 // ============================================
 async function addCustomMovie() {
-    const title = document.getElementById('newMovieTitle').value.trim();
-    const year = document.getElementById('newMovieYear').value.trim();
-    const genre = document.getElementById('newMovieGenre').value.trim();
-    const userDesc = document.getElementById('newMovieDesc').value.trim(); 
-    const rating = document.getElementById('newMovieRating').value.trim();
-    const director = document.getElementById('newMovieDirector').value.trim();
-    const country = document.getElementById('newMovieCountry').value;
-    let poster = document.getElementById('newMoviePoster').value.trim();
+    // استخدمنا الـ Optional Chaining للقيم المطلوبة من الـ DOM
+    const title = document.getElementById('newMovieTitle')?.value?.trim() || "";
+    const year = document.getElementById('newMovieYear')?.value?.trim() || "";
+    const genre = document.getElementById('newMovieGenre')?.value?.trim() || "";
+    const userDesc = document.getElementById('newMovieDesc')?.value?.trim() || ""; 
+    const rating = document.getElementById('newMovieRating')?.value?.trim() || "";
+    const director = document.getElementById('newMovieDirector')?.value?.trim() || "";
+    const country = document.getElementById('newMovieCountry')?.value || "OTHER";
+    let poster = document.getElementById('newMoviePoster')?.value?.trim() || "";
 
     if (!title || !year) {
         showNotification(translations[currentLang].fillRequired, 'warning');
@@ -343,15 +345,19 @@ async function addCustomMovie() {
     }
 
     const addBtn = document.getElementById('addMovieBtn');
-    addBtn.disabled = true;
-    addBtn.innerHTML = '⏳ جاري الإضافة والترجمة...';
+    if(addBtn) {
+        addBtn.disabled = true;
+        addBtn.innerHTML = '⏳ جاري الإضافة والترجمة...';
+    }
 
+    // المتغيرات اللي هتتحفظ
     let ruTitle = title;
     let arTitle = title;
     let ruDesc = userDesc; 
     let arDesc = userDesc; 
 
     try {
+        // جلب الداتا بالروسي
         const resRu = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=ru-RU`);
         const dataRu = await resRu.json();
         if (dataRu.results?.length > 0) {
@@ -363,6 +369,7 @@ async function addCustomMovie() {
             }
         }
 
+        // جلب الداتا بالعربي
         const resAr = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&language=ar-AE`);
         const dataAr = await resAr.json();
         if (dataAr.results?.length > 0) {
@@ -370,6 +377,7 @@ async function addCustomMovie() {
             if (!userDesc) arDesc = dataAr.results[0].overview || '';
         }
 
+        // لو ملقاش بوستر يجيب من OMDb
         if (!poster) {
             const omdbRes = await fetch(`${OMDB_API_URL}?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`);
             const omdbData = await omdbRes.json();
@@ -405,8 +413,10 @@ async function addCustomMovie() {
         console.error('Firestore Error:', error);
         showNotification(translations[currentLang].addError, 'error');
     } finally {
-        addBtn.disabled = false;
-        addBtn.innerHTML = `<span class="btn-icon">💾</span> ${translations[currentLang].btnAdd}`;
+        if(addBtn) {
+            addBtn.disabled = false;
+            addBtn.innerHTML = `<span class="btn-icon">💾</span> ${translations[currentLang].btnAdd}`;
+        }
     }
 }
 
@@ -435,18 +445,17 @@ async function loadAllMovies() {
 }
 
 // ============================================
-// البحث في Firestore مع الحماية من أخطاء النص ✅
+// البحث في Firestore مع الحماية من الـ undefined ✅
 // ============================================
 async function handleSearch() {
-    const rawQuery = document.getElementById('movieSearchInput')?.value.trim();
+    const rawQuery = document.getElementById('movieSearchInput')?.value?.trim() || "";
+    
     if (!rawQuery) {
         showNotification(translations[currentLang].enterTitle, 'warning');
         return;
     }
-    
-    // التعديل السحري لحماية البحث
-    const safeQuery = rawQuery?.toLowerCase() || "";
 
+    const safeQuery = rawQuery.toLowerCase();
     showLoadingMessage(translations[currentLang].searching);
 
     try {
@@ -456,7 +465,7 @@ async function handleSearch() {
         snapshot.forEach(doc => {
             const data = doc.data();
             
-            // التأكد من أن جميع الحقول موجودة قبل تطبيق toLowerCase()
+            // إضافة الحماية لبيانات الـ Title عشان ما تضربش undefined
             const safeTitle = data.title?.toLowerCase() || "";
             const safeTitleRu = data.title_ru?.toLowerCase() || "";
             const safeTitleAr = data.title_ar?.toLowerCase() || "";
@@ -534,16 +543,16 @@ async function refreshPosterOnError(imgEl, encodedTitle, docId) {
             await db.collection('movies').doc(docId).update({ poster: newPoster });
         } else {
             imgEl.style.display = 'none';
-            imgEl.nextElementSibling.style.display = 'flex';
+            if (imgEl.nextElementSibling) imgEl.nextElementSibling.style.display = 'flex';
         }
     } catch (e) {
         imgEl.style.display = 'none';
-        imgEl.nextElementSibling.style.display = 'flex';
+        if (imgEl.nextElementSibling) imgEl.nextElementSibling.style.display = 'flex';
     }
 }
 
 // ============================================
-// كارت الفيلم 
+// كارت الفيلم (بحل مشكلة الوصف الفاضي والترجمة) 
 // ============================================
 function createMovieCard(movie) {
     const card = document.createElement('div');
@@ -786,14 +795,15 @@ function openEditModal(docId) {
     });
 
     document.getElementById('saveEditBtn').addEventListener('click', async () => {
-        const title = document.getElementById('editTitle').value.trim();
-        const year = document.getElementById('editYear').value.trim();
-        const genre = document.getElementById('editGenre').value.trim();
-        const rating = document.getElementById('editRating').value.trim();
-        const director = document.getElementById('editDirector').value.trim();
-        const country = document.getElementById('editCountry').value;
-        const desc = document.getElementById('editDesc').value.trim();
-        let poster = document.getElementById('editPoster').value.trim();
+        // حماية لحقول الإدخال في الـ Edit
+        const title = document.getElementById('editTitle')?.value?.trim() || "";
+        const year = document.getElementById('editYear')?.value?.trim() || "";
+        const genre = document.getElementById('editGenre')?.value?.trim() || "";
+        const rating = document.getElementById('editRating')?.value?.trim() || "";
+        const director = document.getElementById('editDirector')?.value?.trim() || "";
+        const country = document.getElementById('editCountry')?.value || "OTHER";
+        const desc = document.getElementById('editDesc')?.value?.trim() || "";
+        let poster = document.getElementById('editPoster')?.value?.trim() || "";
 
         if (!title || !year) {
             showNotification(translations[currentLang].fillRequired, 'warning');
@@ -801,8 +811,10 @@ function openEditModal(docId) {
         }
 
         const saveBtn = document.getElementById('saveEditBtn');
-        saveBtn.disabled = true;
-        saveBtn.textContent = '⏳ ...';
+        if(saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = '⏳ ...';
+        }
 
         try {
             await db.collection('movies').doc(docId).update({
@@ -823,8 +835,10 @@ function openEditModal(docId) {
         } catch (error) {
             console.error('Edit error:', error);
             showNotification(translations[currentLang].editError, 'error');
-            saveBtn.disabled = false;
-            saveBtn.textContent = '💾 حفظ التعديلات';
+            if(saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '💾 حفظ التعديلات';
+            }
         }
     });
 
@@ -832,7 +846,7 @@ function openEditModal(docId) {
 }
 
 // ============================================
-// حذف فيلم ✅
+// حذف فيلم 
 // ============================================
 async function deleteCustomMovie(docId) {
     if (!confirm('🗑 تأكيد الحذف؟')) return;
@@ -880,10 +894,15 @@ function loadTopRated() {
 function changeView(viewType) {
     const grid = document.getElementById('moviesGrid');
     document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.closest('.view-btn').classList.add('active');
-    grid.style.gridTemplateColumns = viewType === 'list'
-        ? '1fr'
-        : 'repeat(auto-fill, minmax(300px, 1fr))';
+    if(event && event.target) {
+        const targetBtn = event.target.closest('.view-btn');
+        if(targetBtn) targetBtn.classList.add('active');
+    }
+    if (grid) {
+        grid.style.gridTemplateColumns = viewType === 'list'
+            ? '1fr'
+            : 'repeat(auto-fill, minmax(300px, 1fr))';
+    }
 }
 
 // ============================================
@@ -955,7 +974,7 @@ function loadRandomMovie() {
     const cards = document.querySelectorAll('.movie-card');
 
     if (cards.length > 0) {
-        grid.scrollIntoView({ behavior: 'smooth' });
+        if(grid) grid.scrollIntoView({ behavior: 'smooth' });
 
         cards.forEach(card => {
             card.style.display = 'none';
@@ -982,7 +1001,7 @@ function loadTopRated() {
     const cards = document.querySelectorAll('.movie-card');
 
     if (cards.length > 0) {
-        grid.scrollIntoView({ behavior: 'smooth' });
+        if(grid) grid.scrollIntoView({ behavior: 'smooth' });
         let count = 0;
 
         cards.forEach(card => {
@@ -1010,7 +1029,7 @@ function loadTopRated() {
 }
 
 // =================================================
-// 🎬 دالة الفلترة بالنوع (Genre Filter) مع الحماية من أخطاء النص ✅
+// 🎬 دالة الفلترة بالنوع (Genre Filter) مع الحماية ✅
 // =================================================
 function filterByGenre(genre) {
     const cards = document.querySelectorAll('.movie-card');
@@ -1027,10 +1046,11 @@ function filterByGenre(genre) {
         return;
     }
 
-    // التعديل السحري هنا برضه
+    // إضافة الحماية لاسم الـ Genre
     const safeGenre = genre?.toLowerCase() || "";
 
     cards.forEach(card => {
+        // إضافة الحماية للمحتوى الداخلي للكارت
         const cardText = card.innerText?.toLowerCase() || "";
 
         if (cardText.includes(safeGenre)) {
@@ -1053,7 +1073,7 @@ function filterByGenre(genre) {
         noResults.style.display = count === 0 ? 'block' : 'none';
     }
 
-    grid.scrollIntoView({ behavior: 'smooth' });
+    if(grid) grid.scrollIntoView({ behavior: 'smooth' });
 }
 
 // =================================================
@@ -1086,7 +1106,7 @@ let secretKey = "";
 const adminPassword = "elaraby"; 
 
 document.addEventListener('keydown', function (e) {
-    // التعديل السحري للـ key events 
+    // التعديل السحري للـ key events تحسباً لأي خطأ
     secretKey += e.key?.toLowerCase() || "";
 
     if (secretKey.length > adminPassword.length) {
