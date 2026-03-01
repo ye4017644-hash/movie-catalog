@@ -6,9 +6,8 @@ const OMDB_API_URL = 'https://www.omdbapi.com/';
 const TMDB_API_KEY = '8265bd1679663a7ea12ac168da84d2e8';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
-// التعديل السحري عشان الصور تفتح في روسيا من غير VPN 
-// (تم استبدال الرابط الأساسي برابط البروكسي)
-const TMDB_IMAGE_URL = 'https://tmdb.de.anuok.ru/t/p/w500';
+// البروكسي الجديد الصاروخي عشان الصور تفتح من غير مشاكل SSL
+const TMDB_IMAGE_URL = 'https://wsrv.nl/?url=image.tmdb.org/t/p/w500';
 
 const originalWarn = console.warn;
 console.warn = function (...args) {
